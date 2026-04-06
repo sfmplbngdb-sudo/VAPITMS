@@ -918,8 +918,8 @@ function fmtNum(n) { return Number(n||0).toLocaleString('en-IN'); }
 // SUPABASE CONFIG — Replace with your project credentials
 // Get these from: supabase.com → Project → Settings → API
 // ═══════════════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://lxwtqqqrccniypdyevzz.supabase.co';
-const SUPABASE_ANON = 'sb_publishable_TCmTgpNCJs0k5gZvkWidRA_4UensBwU';
+const SUPABASE_URL  = 'https://nstaqzkzyahohcdqorsc.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_ynnkfxNqBvJYcOx4U-mHVA_-kdH1DQF';
 
 // ── Low-level Supabase REST helper ──────────────────────────
 async function sb(table, method, body, query) {
@@ -1026,9 +1026,9 @@ const SB = {
     let soNumber = '';
     if (d.Converted === 'YES') {
       const rows = await sb('so_master', 'GET', null, '?so_number=not.is.null&order=so_number.desc&limit=1');
-      const last = rows[0]?.so_number || 'SFMPL/080/000';
+      const last = rows[0]?.so_number || 'SFMPL/0268/000';
       const num = parseInt(last.split('/')[2]||'0') + 1;
-      soNumber = 'SFMPL/080/' + String(num).padStart(3,'0');
+      soNumber = 'SFMPL/0268/' + String(num).padStart(3,'0');
     }
     const row = await sb('so_master', 'POST', { so_number: soNumber, party_id: d.Party_ID, from_id: d.From_ID, to_id: d.To_ID, mt, rate_given: pr, given_labour_type: d.Given_Labour_Type, rate_received: lr, rec_labour_type: d.Rec_Labour_Type, loading_charge: lc, effective_given: effParty, effective_rec: effLorry, margin_per_mt: marginMT, total_margin: totalMargin, converted: d.Converted, status: d.Status||'ACTIVE', remarks: d.Remarks||'', allocated: false, documentation_status: false, mf_status: false, unloading_status: false, profit_status: false, created_by: d.Created_By||(auth.user?auth.user.username:'admin') });
     return { success: true, id: row[0]?.id, SO_Number: soNumber };
@@ -1039,9 +1039,9 @@ const SB = {
       const rows = await sb('so_master', 'GET', null, '?id=eq.' + d.SO_ID);
       if (rows[0] && !rows[0].so_number) {
         const latest = await sb('so_master', 'GET', null, '?so_number=not.is.null&order=so_number.desc&limit=1');
-        const last = latest[0]?.so_number || 'SFMPL/080/000';
+        const last = latest[0]?.so_number || 'SFMPL/0268/000';
         const num = parseInt(last.split('/')[2]||'0') + 1;
-        updates.so_number = 'SFMPL/080/' + String(num).padStart(3,'0');
+        updates.so_number = 'SFMPL/0268/' + String(num).padStart(3,'0');
       }
     }
     await sb('so_master', 'PATCH', updates, '?id=eq.' + d.SO_ID);
@@ -4303,7 +4303,7 @@ async function renderReport() {
       <div style="display:grid;grid-template-columns:repeat(4,1fr) repeat(2,160px);gap:10px;align-items:end">
         <div class="form-group">
           <label>SO Number</label>
-          <input type="text" id="rf-so" placeholder="e.g. SFMPL/080/001">
+          <input type="text" id="rf-so" placeholder="e.g. SFMPL/0268/001">
         </div>
         <div class="form-group">
           <label>Lorry No</label>
