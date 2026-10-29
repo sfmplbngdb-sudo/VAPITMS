@@ -4584,7 +4584,7 @@ async function renderReport() {
           <button class="btn btn-outline btn-sm" onclick="resetRptFilters()">↺ Reset</button>
           <button class="btn btn-success btn-sm" onclick="exportRptExcel()">↓ Excel (MF Format)</button>
           <button class="btn btn-outline btn-sm" onclick="exportRptCSV()">↓ CSV</button>
-          <button class="btn btn-outline btn-sm" onclick="window.print()">⎙ Print</button>
+          <button class="btn btn-outline btn-sm" onclick="rptPrintReport()">⎙ Print Report</button>
         </div>
       </div>
       <div class="mr-body">
@@ -5512,23 +5512,272 @@ async function renderLedger() {
 }
 
 // ---- Print slips + WhatsApp (from the report row; no data written) ----
+// =============================================
+// PROFESSIONAL PRINT FORMATS  (MF Slip · GC / Lorry Receipt · Payment Voucher · Master Report)
+// =============================================
+// ★ Fill these once — blank lines are simply not printed on the letterhead.
+const PRINT_CO = {
+  name:    'SFMPL Transport',
+  tagline: 'Transport & Logistics Services',
+  address: '',      // e.g. 'Plot 12, Industrial Area, Bengaluru - 560001'
+  phone:   '',      // e.g. '+91 98765 43210'
+  email:   '',
+  gstin:   '',
+  pan:     ''
+};
+
+// Indian-system amount in words  (12500.5 -> "Rupees Twelve Thousand Five Hundred and Fifty Paise Only")
+function _pfWords(num) {
+  num = Math.round((parseFloat(num) || 0) * 100) / 100;
+  if (num === 0) return 'Rupees Zero Only';
+  const neg = num < 0; num = Math.abs(num);
+  const ones = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+  const tens = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  const two = n => n < 20 ? ones[n] : tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : '');
+  const three = n => (n >= 100 ? ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 ? ' ' : '') : '') + (n % 100 ? two(n % 100) : '');
+  const conv = n => {
+    let s = '';
+    const cr = Math.floor(n / 10000000); n %= 10000000;
+    const lk = Math.floor(n / 100000);   n %= 100000;
+    const th = Math.floor(n / 1000);     n %= 1000;
+    if (cr) s += three(cr) + ' Crore ';
+    if (lk) s += two(lk) + ' Lakh ';
+    if (th) s += two(th) + ' Thousand ';
+    if (n)  s += three(n);
+    return s.trim();
+  };
+  const rs = Math.floor(num), ps = Math.round((num - rs) * 100);
+  let out = (neg ? 'Minus ' : '') + 'Rupees ' + (rs ? conv(rs) : 'Zero');
+  if (ps) out += ' and ' + two(ps) + ' Paise';
+  return out + ' Only';
+}
+
+const _PF_CSS = `
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{font-family:'Segoe UI',Arial,Helvetica,sans-serif;color:#1b2430;font-size:11.5px;line-height:1.35;background:#e9edf2}
+.bar{position:sticky;top:0;z-index:5;background:#13233a;padding:8px 16px;display:flex;gap:8px;align-items:center;color:#cdd9e5;font-size:12px}
+.bar button{background:#0969da;color:#fff;border:0;border-radius:4px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:600}
+.bar button.g{background:transparent;border:1px solid #476080}
+.sheet{background:#fff;width:210mm;min-height:297mm;margin:14px auto;padding:12mm 13mm;box-shadow:0 2px 14px rgba(0,0,0,.18);position:relative}
+.sheet.land{width:297mm;min-height:210mm;padding:9mm 10mm}
+.hd{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding-bottom:10px}
+.brand{display:flex;gap:11px;align-items:center}
+.logo{width:46px;height:46px;border-radius:9px;background:#13233a;color:#fff;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;letter-spacing:.5px;border-bottom:3px solid #539bf5}
+.co{font-size:21px;font-weight:800;color:#13233a;letter-spacing:.2px;line-height:1.1}
+.tag{font-size:10.5px;color:#57606a;margin-top:2px;letter-spacing:.3px}
+.addr{font-size:10px;color:#57606a;margin-top:3px}
+.dt{text-align:right}
+.dt-title{display:inline-block;background:#13233a;color:#fff;font-weight:700;font-size:12.5px;letter-spacing:1.2px;padding:6px 14px;border-radius:3px;text-transform:uppercase}
+.dt-meta{margin-top:6px;margin-left:auto;border-collapse:collapse;font-size:11px}
+.dt-meta td{padding:1.5px 0 1.5px 14px;text-align:right}
+.dt-meta td:first-child{color:#57606a}
+.dt-meta td:last-child{font-weight:700;color:#13233a}
+.rule{height:3px;background:linear-gradient(90deg,#13233a 0%,#13233a 70%,#539bf5 70%,#539bf5 100%);margin-bottom:12px}
+.sec{margin-top:11px;border:1px solid #c9d2dc;border-radius:3px;overflow:hidden;page-break-inside:avoid}
+.sec>.st{background:#eaf0f7;color:#13233a;font-weight:700;font-size:10.5px;letter-spacing:.9px;text-transform:uppercase;padding:5px 10px;border-bottom:1px solid #c9d2dc}
+table.kv{width:100%;border-collapse:collapse}
+table.kv th{width:17%;text-align:left;font-weight:600;color:#57606a;background:#f7f9fb;padding:6px 10px;border:1px solid #e1e7ee;font-size:10.5px}
+table.kv td{width:33%;padding:6px 10px;border:1px solid #e1e7ee;font-weight:600;color:#0d1117}
+table.kv tr:first-child th,table.kv tr:first-child td{border-top:0}
+table.kv tr th:first-child{border-left:0}table.kv tr td:last-child{border-right:0}
+table.amt{width:100%;border-collapse:collapse}
+table.amt td{padding:6px 10px;border-bottom:1px solid #e1e7ee}
+table.amt td:last-child{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;width:30%}
+table.amt tr.sub td{background:#f7f9fb;font-weight:700}
+table.amt tr.less td:last-child{color:#9a2a2a}
+table.amt tr.tot td{background:#13233a;color:#fff;font-weight:800;font-size:13px;border:0;padding:9px 10px}
+table.amt .note{display:block;font-size:9.5px;color:#7a8591;font-weight:400}
+table.amt tr.tot .note{color:#b6c4d6}
+.words{margin-top:9px;border:1px dashed #9aa7b5;background:#fafbfc;border-radius:3px;padding:7px 10px;font-size:11px}
+.words b{color:#13233a}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two .sec{margin-top:11px}
+.box{padding:8px 11px;min-height:62px}
+.box .nm{font-weight:700;font-size:13px;color:#0d1117}
+.box .sm{color:#57606a;font-size:10.5px;margin-top:2px}
+.route{display:flex;align-items:center;justify-content:center;gap:14px;padding:10px;font-weight:700;font-size:14px;color:#13233a}
+.route i{font-style:normal;color:#539bf5;font-size:18px}
+table.goods{width:100%;border-collapse:collapse}
+table.goods th{background:#f1f5f9;text-align:left;font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#3b4754;padding:6px 10px;border-bottom:1px solid #c9d2dc;border-right:1px solid #e1e7ee}
+table.goods td{padding:9px 10px;border-right:1px solid #e1e7ee;font-weight:600;vertical-align:top}
+table.goods th:last-child,table.goods td:last-child{border-right:0}
+.pay{display:flex;gap:22px;padding:8px 12px;font-size:11px}
+.pay span:before{content:'';display:inline-block;width:11px;height:11px;border:1.4px solid #13233a;border-radius:2px;margin-right:6px;vertical-align:-2px}
+.sigs{display:grid;gap:12px;margin-top:46px}
+.sigs div{border-top:1.2px solid #1b2430;padding-top:5px;text-align:center;font-size:10.5px;color:#3b4754;font-weight:600}
+.decl{margin-top:11px;font-size:10px;color:#57606a;font-style:italic}
+.ft{position:absolute;left:13mm;right:13mm;bottom:8mm;border-top:1px solid #c9d2dc;padding-top:5px;display:flex;justify-content:space-between;font-size:9.5px;color:#7a8591}
+.sheet.land .ft{left:10mm;right:10mm;bottom:5mm}
+/* report */
+.kpis{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-bottom:10px}
+.kpi{border:1px solid #c9d2dc;border-top:3px solid #13233a;border-radius:3px;padding:6px 9px;background:#fafbfc}
+.kpi .l{font-size:8.5px;letter-spacing:.7px;text-transform:uppercase;color:#57606a}
+.kpi .v{font-size:14px;font-weight:800;color:#13233a;margin-top:1px}
+.kpi.g{border-top-color:#1a7f37}.kpi.g .v{color:#1a7f37}.kpi.r{border-top-color:#cf222e}.kpi.r .v{color:#cf222e}.kpi.o{border-top-color:#b45309}.kpi.o .v{color:#b45309}
+.filt{font-size:10px;color:#3b4754;margin-bottom:8px;background:#f1f5f9;border-radius:3px;padding:5px 9px}
+.filt b{color:#13233a}
+table.rep{width:100%;border-collapse:collapse;font-size:9.2px}
+table.rep thead{display:table-header-group}
+table.rep tfoot{display:table-row-group}
+table.rep th{background:#13233a;color:#fff;padding:6px 6px;text-align:left;font-size:8.6px;letter-spacing:.5px;text-transform:uppercase;border-right:1px solid #2c4468}
+table.rep th.r,table.rep td.r{text-align:right}
+table.rep td{padding:4.5px 6px;border-bottom:1px solid #dfe5ec;border-right:1px solid #eef1f5;vertical-align:top}
+table.rep tbody tr:nth-child(even) td{background:#f6f8fb}
+table.rep tr{page-break-inside:avoid}
+table.rep td.mf{font-weight:700;color:#0550ae}
+table.rep td.neg{color:#cf222e;font-weight:700}table.rep td.pos{color:#1a7f37;font-weight:700}table.rep td.due{color:#b45309;font-weight:700}
+table.rep tfoot td{background:#13233a;color:#fff;font-weight:800;border:0;padding:7px 6px;font-size:9.6px}
+h3.sub{font-size:11px;color:#13233a;text-transform:uppercase;letter-spacing:.9px;margin:14px 0 5px;padding-bottom:3px;border-bottom:2px solid #539bf5;page-break-after:avoid}
+@media print{
+  body{background:#fff}.bar{display:none}
+  .sheet{margin:0;box-shadow:none;width:auto;min-height:0;height:277mm}
+  .sheet.land{width:auto;height:auto;min-height:0}
+  .sheet.land .ft{position:static;margin-top:8px}
+}
+`;
+
+function _pfOpen(title, bodyHtml, landscape) {
+  const w = window.open('', '_blank');
+  if (!w) { toast('Allow pop-ups to print', 'error'); return null; }
+  const page = landscape ? '@page{size:A4 landscape;margin:8mm}@media print{.sheet{padding:0!important;height:auto!important}}' : '@page{size:A4;margin:0}';
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + _rptEsc(title) + '</title><style>' + _PF_CSS + page + '</style></head><body>'
+    + '<div class="bar"><button onclick="window.print()">&#9113; Print</button><button class="g" onclick="window.close()">Close</button><span>' + _rptEsc(title) + ' — use "Save as PDF" in the print dialog to get a PDF</span></div>'
+    + bodyHtml + '<script>window.onload=function(){setTimeout(function(){window.print()},350)}<\/script></body></html>');
+  w.document.close();
+  return w;
+}
+function _pfHead(docTitle, metaPairs) {
+  const c = PRINT_CO;
+  const line1 = [c.address].filter(Boolean).join('');
+  const line2 = [c.phone && ('Ph: ' + c.phone), c.email, c.gstin && ('GSTIN: ' + c.gstin), c.pan && ('PAN: ' + c.pan)].filter(Boolean).join('  |  ');
+  return '<div class="hd"><div class="brand"><div class="logo">' + _rptEsc((c.name || 'SF').slice(0, 2).toUpperCase()) + '</div><div>'
+    + '<div class="co">' + _rptEsc(c.name) + '</div>' + (c.tagline ? '<div class="tag">' + _rptEsc(c.tagline) + '</div>' : '')
+    + (line1 ? '<div class="addr">' + _rptEsc(line1) + '</div>' : '') + (line2 ? '<div class="addr">' + _rptEsc(line2) + '</div>' : '')
+    + '</div></div><div class="dt"><div class="dt-title">' + _rptEsc(docTitle) + '</div><table class="dt-meta">'
+    + metaPairs.map(p => '<tr><td>' + _rptEsc(p[0]) + '</td><td>' + _rptEsc(p[1]) + '</td></tr>').join('') + '</table></div></div><div class="rule"></div>';
+}
+function _pfFoot(extra) {
+  const who = (auth.user && (auth.user.display_name || auth.user.username)) || '';
+  return '<div class="ft"><span>' + (extra || 'This is a computer generated document.') + '</span><span>Printed by ' + _rptEsc(who) + ' · '
+    + new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + '</span></div>';
+}
+function _pfKV(pairs) {                                  // 2 label/value pairs per row
+  let h = '<table class="kv">';
+  for (let i = 0; i < pairs.length; i += 2) {
+    const a = pairs[i], b = pairs[i + 1];
+    h += '<tr><th>' + _rptEsc(a[0]) + '</th><td>' + _rptEsc(a[1]) + '</td>' + (b ? '<th>' + _rptEsc(b[0]) + '</th><td>' + _rptEsc(b[1]) + '</td>' : '<th></th><td></td>') + '</tr>';
+  }
+  return h + '</table>';
+}
+const _pfSec = (title, inner) => '<div class="sec"><div class="st">' + _rptEsc(title) + '</div>' + inner + '</div>';
+const _pfSigs = labels => '<div class="sigs" style="grid-template-columns:repeat(' + labels.length + ',1fr)">' + labels.map(l => '<div>' + _rptEsc(l) + '</div>').join('') + '</div>';
+
+// ---------- Row slips: MF Slip · GC · Payment Voucher ----------
 function rptPrint(i, type) {
   const r = _rptData[i]; if (!r) return;
-  const n = v => parseFloat(v) || 0, inr = v => '₹ ' + n(v).toLocaleString('en-IN', {maximumFractionDigits: 0}), dt = v => v ? _rptFmtDate(v) : '—';
-  const S = v => (v === undefined || v === null || v === '') ? '—' : v;
+  const n = v => parseFloat(v) || 0;
+  const money = v => n(v).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const inr = v => '₹ ' + money(v);
+  const dt = v => v ? _rptFmtDate(v) : '—';
+  const S = v => (v === undefined || v === null || v === '') ? '—' : String(v);
   if (type === 'wa') {
     const t = `*SFMPL — MF ${S(r.MF_No)}*\nLorry: ${S(r.Lorry_No)}\nLoading: ${dt(r.Loading_Date)}\nTo: ${S(r.Destination)}\nQty: ${n(r.Final_MT)} MT\nFreight (MF): ${inr(r.Freight_MF)}\nAdvance: ${inr(r.Advance)}\nBalance: ${inr(r.Balance)}`;
     window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank'); return;
   }
-  const defs = {
-    mf: ['Motor Freight (MF) Slip', [['MF No', r.MF_No], ['SO No', r.SO_Number], ['Loading Date', dt(r.Loading_Date)], ['Lorry No', r.Lorry_No], ['Consignor', r.Consignor], ['Consignee', r.Consignee], ['Destination', r.Destination], ['Final MT', r.Final_MT], ['PMT Rate', inr(r.PMT_Rate)], ['Total Freight', inr(r.Total_Freight)], ['L/M', inr(r.LM)], ['P/M', inr(r.PM)], ['Freight (MF)', inr(r.Freight_MF)], ['Advance', inr(r.Advance)], ['Diesel', inr(r.Diesel)], ['Balance', inr(r.Balance)]]],
-    gc: ['Goods Consignment (GC) Details', [['GC No', r.GC_No], ['Invoice No', r.Invoice_No], ['E-Way Bill', r.Eway_Bill], ['E-Way Expiry', dt(r.Eway_Expiry)], ['Loading Date', dt(r.Loading_Date)], ['Lorry No', r.Lorry_No], ['Consignor', r.Consignor], ['Consignee', r.Consignee], ['Destination', r.Destination], ['PKGS', r.PKGS], ['Articles', r.Articles], ['Final MT', r.Final_MT]]],
-    pv: ['Payment Voucher', [['MF No', r.MF_No], ['Lorry No', r.Lorry_No], ['Loading Date', dt(r.Loading_Date)], ['Consignee', r.Consignee], ['Freight (MF)', inr(r.Freight_MF)], ['Advance', inr(r.Advance)], ['Diesel', inr(r.Diesel)], ['Balance Payable', inr(r.Balance)]]]
-  };
-  const [title, f] = defs[type];
-  const w = window.open('', '_blank'); if (!w) { toast('Allow pop-ups to print', 'error'); return; }
-  w.document.write(`<html><head><title>${title} ${S(r.MF_No)}</title><style>body{font-family:Arial,sans-serif;margin:30px;color:#111}h2{margin:0}small{color:#555}table{border-collapse:collapse;width:100%;margin-top:14px}td{border:1px solid #999;padding:7px 10px;font-size:13px}td:first-child{width:38%;background:#f2f4f7;font-weight:700}.sg{display:flex;justify-content:space-between;margin-top:70px;font-size:12px}.sg div{border-top:1px solid #111;padding-top:4px;width:30%;text-align:center}@media print{button{display:none}}</style></head><body><h2>SFMPL Transport</h2><small>${title} · Printed ${new Date().toLocaleDateString('en-IN')}</small><table>${f.map(x => `<tr><td>${x[0]}</td><td>${_rptEsc(S(x[1]))}</td></tr>`).join('')}</table><div class="sg"><div>Prepared by</div><div>Checked by</div><div>Receiver / Driver</div></div><script>window.onload=function(){window.print()}<\/script></body></html>`);
-  w.document.close();
+  const nm = (list, idk, namek, id) => { const x = (list || []).find(o => String(o[idk]) === String(id)); return x ? x[namek] : ''; };
+  const broker = nm(state.brokers, 'Broker_ID', 'Broker_Name', r.Broker_ID);
+  const from   = nm(state.places,  'Place_ID',  'Place_Name',  r.From_ID);
+  const party  = nm(state.parties, 'Party_ID',  'Party_Name',  r.Party_ID);
+  const today  = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  let title, html;
+
+  if (type === 'mf') {
+    title = 'Motor Freight Slip';
+    const amt = (lbl, v, cls, note) => '<tr class="' + (cls || '') + '"><td>' + lbl + (note ? '<span class="note">' + note + '</span>' : '') + '</td><td>' + (cls === 'less' ? '(–) ' : '') + inr(v) + '</td></tr>';
+    html = '<div class="sheet">' + _pfHead('Motor Freight Slip', [['MF No', S(r.MF_No)], ['Date', dt(r.Loading_Date)], ['Printed', today]])
+      + _pfSec('Trip Details', _pfKV([['Lorry No', S(r.Lorry_No)], ['SO No', S(r.SO_Number)], ['Broker / Owner', S(broker)], ['Loading Date', dt(r.Loading_Date)],
+          ['From', S(from)], ['Destination', S(r.Destination)], ['Consignor', S(r.Consignor)], ['Consignee', S(r.Consignee)], ['Final Qty (MT)', n(r.Final_MT).toLocaleString('en-IN', { maximumFractionDigits: 3 })], ['PMT Rate', inr(r.PMT_Rate)]]))
+      + _pfSec('Freight Computation', '<table class="amt">'
+          + amt('Total Freight', r.Total_Freight, '', n(r.Final_MT) + ' MT × ' + inr(r.PMT_Rate))
+          + (n(r.LM) ? amt('Less: L/M', r.LM, 'less') : '') + (n(r.PM) ? amt('Less: P/M', r.PM, 'less') : '')
+          + (n(r.Other_Expense) ? amt('Add: Other Expense', r.Other_Expense) : '')
+          + amt('MF Freight', r.Freight_MF, 'sub')
+          + (n(r.Advance) ? amt('Less: Advance Paid', r.Advance, 'less') : '') + (n(r.Diesel) ? amt('Less: Diesel', r.Diesel, 'less') : '')
+          + '<tr class="tot"><td>BALANCE PAYABLE</td><td>' + inr(r.Balance) + '</td></tr></table>')
+      + '<div class="words"><b>Amount in words:</b> ' + _rptEsc(_pfWords(r.Balance)) + '</div>'
+      + _pfSigs(['Prepared by', 'Checked by', 'Authorised Signatory', 'Driver / Broker Signature'])
+      + _pfFoot() + '</div>';
+  } else if (type === 'gc') {
+    title = 'Goods Consignment Note';
+    html = '<div class="sheet">' + _pfHead('Goods Consignment Note', [['GC / LR No', S(r.GC_No)], ['Date', dt(r.Loading_Date)], ['Lorry No', S(r.Lorry_No)]])
+      + '<div class="two">' + _pfSec('Consignor (From)', '<div class="box"><div class="nm">' + _rptEsc(S(r.Consignor)) + '</div><div class="sm">' + _rptEsc(from ? 'Loading Point: ' + from : '') + '</div></div>')
+      + _pfSec('Consignee (To)', '<div class="box"><div class="nm">' + _rptEsc(S(r.Consignee)) + '</div><div class="sm">' + _rptEsc(r.Destination ? 'Destination: ' + r.Destination : '') + '</div></div>') + '</div>'
+      + _pfSec('Route', '<div class="route"><span>' + _rptEsc(S(from || r.Consignor)) + '</span><i>&#10132;</i><span>' + _rptEsc(S(r.Destination)) + '</span></div>')
+      + _pfSec('Goods Particulars', '<table class="goods"><thead><tr><th style="width:14%">Packages</th><th style="width:14%">Articles</th><th>Description of Goods</th><th style="width:18%">Weight (MT)</th></tr></thead><tbody><tr>'
+          + '<td>' + _rptEsc(S(r.PKGS)) + '</td><td>' + _rptEsc(S(r.Articles)) + '</td><td>' + _rptEsc(S(r.Items)) + '</td><td>' + n(r.Final_MT).toLocaleString('en-IN', { maximumFractionDigits: 3 }) + '</td></tr></tbody></table>')
+      + _pfSec('Document References', _pfKV([['Invoice No', S(r.Invoice_No)], ['E-way Bill No', S(r.Eway_Bill)], ['E-way Expiry', dt(r.Eway_Expiry)], ['SO No', S(r.SO_Number)]]))
+      + '<div class="decl">Received the above goods in apparent good condition unless otherwise noted.</div>'
+      + _pfSigs(['Consignor Signature', 'Driver Signature', 'Consignee (Receiver) Signature', 'For ' + (PRINT_CO.name || 'Company')])
+      + _pfFoot() + '</div>';
+  } else {
+    title = 'Payment Voucher';
+    const amt = (lbl, v, cls) => '<tr class="' + (cls || '') + '"><td>' + lbl + '</td><td>' + (cls === 'less' ? '(–) ' : '') + inr(v) + '</td></tr>';
+    html = '<div class="sheet">' + _pfHead('Payment Voucher', [['Voucher Ref', S(r.MF_No)], ['Date', today]])
+      + _pfSec('Payee & Reference', _pfKV([['Pay To (Broker)', S(broker)], ['MF No', S(r.MF_No)], ['Lorry No', S(r.Lorry_No)], ['Loading Date', dt(r.Loading_Date)], ['Consignee', S(r.Consignee)], ['Destination', S(r.Destination)]]))
+      + _pfSec('Payment Details', '<table class="amt">' + amt('Freight (MF)', r.Freight_MF, 'sub')
+          + (n(r.Advance) ? amt('Advance Already Paid', r.Advance, 'less') : '') + (n(r.Diesel) ? amt('Diesel', r.Diesel, 'less') : '')
+          + '<tr class="tot"><td>NET AMOUNT PAYABLE</td><td>' + inr(r.Balance) + '</td></tr></table>')
+      + '<div class="words"><b>Amount in words:</b> ' + _rptEsc(_pfWords(r.Balance)) + '</div>'
+      + _pfSec('Mode of Payment', '<div class="pay"><span>Cash</span><span>Cheque</span><span>NEFT / RTGS</span><span>UPI</span></div>'
+          + _pfKV([['Cheque / Txn Ref', ''], ['Paid On', '']]))
+      + _pfSigs(['Prepared by', 'Checked by', 'Approved by', 'Receiver Signature'])
+      + _pfFoot() + '</div>';
+  }
+  _pfOpen(title + ' ' + S(r.MF_No), html, false);
+}
+
+// ---------- Master Report print (landscape, follows current filters) ----------
+async function rptPrintReport() {
+  toast('Preparing print view…');
+  let res; try { res = await call('getMasterExcelData', _rptFilters); } catch (e) { res = null; }
+  if (!res || !res.success) { toast('Could not load report data', 'error'); return; }
+  const rows = (res.data || []).filter(r => String(r.MF_No || '').trim());
+  if (!rows.length) { toast('No MF records in the selected range', 'error'); return; }
+  const n = v => parseFloat(v) || 0;
+  const m2 = v => n(v).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const m0 = v => n(v).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+  const sum = fn => rows.reduce((a, r) => a + n(fn(r)), 0);
+  const f = _rptFilters || {};
+  const period = (f.dateFrom ? _rptFmtDate(f.dateFrom) : 'Start') + '  to  ' + (f.dateTo ? _rptFmtDate(f.dateTo) : 'Latest');
+  const FL = { soNumber: 'SO', lorryNo: 'Lorry', consignee: 'Consignee', destination: 'Destination', mfNo: 'MF No', converted: 'Status' };
+  const act = Object.keys(FL).filter(k => f[k]).map(k => '<b>' + FL[k] + ':</b> ' + _rptEsc(f[k])).join(' &nbsp;·&nbsp; ');
+  const gp = sum(r => r.Has_Profit ? r.Gross_Profit : 0);
+  const kpi = (l, v, c) => '<div class="kpi ' + (c || '') + '"><div class="l">' + l + '</div><div class="v">' + v + '</div></div>';
+  const body = rows.map((r, i) => {
+    const gpv = r.Has_Profit ? n(r.Gross_Profit) : null;
+    return '<tr><td>' + (i + 1) + '</td><td>' + _rptEsc(_rptFmtDate(r.Loading_Date) || '—') + '</td><td class="mf">' + _rptEsc(r.MF_No) + '</td><td>' + _rptEsc(r.Lorry_No || '') + '</td>'
+      + '<td>' + _rptEsc(r.Broker_Name || '') + '</td><td>' + _rptEsc(r.Destination || '') + '</td><td>' + _rptEsc(r.Consignee || '') + '</td>'
+      + '<td class="r">' + n(r.Final_MT).toLocaleString('en-IN', { maximumFractionDigits: 2 }) + '</td><td class="r">' + m2(r.Freight_MF) + '</td><td class="r">' + m2(r.Advance) + '</td>'
+      + '<td class="r' + (n(r.Balance) > 0 ? ' due' : '') + '">' + m2(r.Balance) + '</td><td class="r">' + m2(r.Bilti_Freight) + '</td>'
+      + '<td class="r ' + (gpv === null ? '' : gpv < 0 ? 'neg' : 'pos') + '">' + (gpv === null ? '—' : m2(gpv)) + '</td></tr>';
+  }).join('');
+  const bk = {};
+  rows.forEach(r => { const k = r.Broker_Name || '(No broker)'; const o = bk[k] || (bk[k] = [0, 0, 0, 0, 0]); o[0]++; o[1] += n(r.Final_MT); o[2] += n(r.Freight_MF); o[3] += n(r.Advance); o[4] += n(r.Balance); });
+  const bkRows = Object.keys(bk).sort((a, b) => bk[b][0] - bk[a][0]).map(k => '<tr><td class="mf">' + _rptEsc(k) + '</td><td class="r">' + bk[k][0] + '</td><td class="r">' + bk[k][1].toLocaleString('en-IN', { maximumFractionDigits: 2 })
+    + '</td><td class="r">' + m2(bk[k][2]) + '</td><td class="r">' + m2(bk[k][3]) + '</td><td class="r' + (bk[k][4] > 0 ? ' due' : '') + '">' + m2(bk[k][4]) + '</td></tr>').join('');
+  const html = '<div class="sheet land">' + _pfHead('Master Report', [['Loading Date', period], ['MF Records', String(rows.length)], ['Printed', new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })]])
+    + '<div class="kpis">' + kpi('MF Records', rows.length) + kpi('Total Qty (MT)', sum(r => r.Final_MT).toLocaleString('en-IN', { maximumFractionDigits: 2 })) + kpi('MF Freight', '₹ ' + m0(sum(r => r.Freight_MF)))
+      + kpi('Advance Paid', '₹ ' + m0(sum(r => r.Advance))) + kpi('Balance Due', '₹ ' + m0(sum(r => r.Balance)), 'o') + kpi('Bilti Freight', '₹ ' + m0(sum(r => r.Bilti_Freight)))
+      + kpi('Gross Profit', '₹ ' + m0(gp), gp < 0 ? 'r' : 'g') + '</div>'
+    + (act ? '<div class="filt">Filters &nbsp;→&nbsp; ' + act + '</div>' : '')
+    + '<table class="rep"><thead><tr><th>#</th><th>Loading Date</th><th>MF No</th><th>Truck No</th><th>Broker</th><th>Destination</th><th>Consignee</th><th class="r">Qty (MT)</th><th class="r">MF Freight</th><th class="r">Advance</th><th class="r">Balance</th><th class="r">Bilti Freight</th><th class="r">GP</th></tr></thead>'
+    + '<tbody>' + body + '</tbody><tfoot><tr><td colspan="7">GRAND TOTAL (' + rows.length + ' MF)</td><td class="r">' + sum(r => r.Final_MT).toLocaleString('en-IN', { maximumFractionDigits: 2 }) + '</td><td class="r">' + m2(sum(r => r.Freight_MF)) + '</td><td class="r">' + m2(sum(r => r.Advance))
+      + '</td><td class="r">' + m2(sum(r => r.Balance)) + '</td><td class="r">' + m2(sum(r => r.Bilti_Freight)) + '</td><td class="r">' + m2(gp) + '</td></tr></tfoot></table>'
+    + '<h3 class="sub">Broker-wise Summary</h3><table class="rep" style="width:68%"><thead><tr><th>Broker</th><th class="r">Trips</th><th class="r">Qty (MT)</th><th class="r">MF Freight</th><th class="r">Advance</th><th class="r">Balance</th></tr></thead><tbody>' + bkRows + '</tbody></table>'
+    + '<div class="ft"><span>SFMPL TMS — Master Report · computer generated</span><span>Printed by ' + _rptEsc((auth.user && (auth.user.display_name || auth.user.username)) || '') + ' · '
+    + new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + '</span></div></div>';
+  _pfOpen('Master Report ' + period, html, true);
 }
 
 
