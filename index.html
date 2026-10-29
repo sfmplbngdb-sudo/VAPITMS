@@ -848,6 +848,13 @@ tbody tr{transition:background var(--ease)}
 .mr-pbtn{padding:2px 8px!important;font-size:10px!important;margin-right:3px}
 .wt{display:inline-block;padding:1px 8px;border-radius:999px;font-size:10px;font-weight:700;border:1px solid transparent}
 .wt-0{background:var(--blue-lt);color:var(--blue-dk);border-color:#b6d4fb}.wt-1{background:var(--amber-lt);color:var(--amber);border-color:#f0dc8a}.wt-2{background:var(--red-lt);color:var(--red);border-color:#ffcecb}
+.df-ov{position:fixed;inset:0;background:rgba(13,17,23,.55);z-index:900;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:28px 12px}
+.df-box{background:var(--surface);border:1px solid var(--border2);border-radius:6px;width:min(900px,100%);box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.df-head{padding:13px 18px;border-bottom:1px solid var(--border);font-weight:700;font-size:13px;display:flex;justify-content:space-between;align-items:center;background:var(--canvas);border-radius:6px 6px 0 0}
+.df-body{padding:16px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-height:68vh;overflow:auto}
+.df-foot{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;align-items:center;background:var(--canvas);border-radius:0 0 6px 6px}
+@media(max-width:760px){.df-body{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.df-body{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -931,6 +938,11 @@ tbody tr{transition:background var(--ease)}
     <div class="nav-item" onclick="navigate('import')">
       <span class="nav-icon">↓</span>Import Data
     </div>
+    <div class="nav-divider"></div>
+    <div class="nav-group-label">Data Correction</div>
+    <div class="nav-item" onclick="navigate('datafix')">
+      <span class="nav-icon">&#9998;</span>Edit / Delete Data
+    </div>
     <div id="nav-usermgmt" style="display:none">
       <div class="nav-divider"></div>
       <div class="nav-group-label">Admin</div>
@@ -993,7 +1005,7 @@ function navigate(page) {
   state.page = page;
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   const items = document.querySelectorAll('.nav-item');
-  const map = {dashboard:0,sales:1,operations:2,dispatch:3,mf:4,unloading:5,profit:6,account:7,report:8,masters:9,import:10,usermgmt:11};
+  const map = {dashboard:0,sales:1,operations:2,dispatch:3,mf:4,unloading:5,profit:6,account:7,report:8,masters:9,import:10,datafix:11,usermgmt:12};
   if (items[map[page]]) items[map[page]].classList.add('active');
   const titles = {
     dashboard:'Dashboard',
@@ -1007,6 +1019,7 @@ function navigate(page) {
     report:'Master Report',
     masters:'Master Data',
     import:'Import Data',
+    datafix:'Edit / Delete Data',
     usermgmt:'User Management'
   };
   document.getElementById('page-title').textContent = titles[page] || page;
@@ -1026,6 +1039,7 @@ function renderPage(page) {
     report:     renderReport,
     masters:    renderMasters,
     import:     renderImport,
+    datafix:    renderDataFix,
     usermgmt:   renderUserMgmt
   };
   const fn = pages[page];
@@ -5079,7 +5093,7 @@ function _buildMasterWorkbook(rows, f) {
     ['Ex-Point / Weight',r => n(r.Extra_Point),                                'n'],
     ['Total Exp',        r => n(r.Total_Exp),                                  'n'],
     ['Total Cost',       r => n(r.Total_Cost),                                 'n'],
-    ['Party Rate',       r => n(r.Party_Rate),                                 'r'],
+    ['Party Rate',       r => n(r.Bill_Pmt),                                       'r'],
     ['Bilti Freight',    r => n(r.Bilti_Freight),                              'n'],
     ['Extra Labour',     r => n(r.Extra_Labour),                               'n'],
     ['GP',               r => r.Has_Profit ? n(r.Gross_Profit) : null,         'n'],
@@ -5372,7 +5386,7 @@ async function _exportRptExcelPlain() {
     ['Ex-Point/Weight',  r => n(r.Extra_Point),                               'n'],
     ['Total Exp',        r => n(r.Total_Exp),                                 'n'],
     ['Total Exp',        r => n(r.Total_Cost),                                'n'],   // 2nd "Total Exp" = Total Cost (Freight MF + Exp + Extra Labour)
-    ['PARTY RATE',       r => n(r.Party_Rate),                                'r'],
+    ['PARTY RATE',       r => n(r.Bill_Pmt),                                      'r'],
     ['Bilti Freight',    r => n(r.Bilti_Freight),                             'n'],
     ['Extra Labour',     r => n(r.Extra_Labour),                              'n'],
     ['GP',               r => r.Has_Profit ? n(r.Gross_Profit) : null,        'n'],
@@ -5737,6 +5751,260 @@ async function _umDel(idx) {
   var u = window._umUsers[idx];
   if (!u) return;
   await deleteUser(u.id, u.username);
+}
+
+// =============================================
+// DATA CORRECTION — Edit / Delete records (all tables)
+//   Edit  : every logged-in user      Delete : ADMIN only
+// =============================================
+// field = [column, label, type, readonlyDerived?]   type: t text | n number | d date | b yes/no | party | place | broker | 's:A|B|C' select
+const DF = {
+  so: { label: 'Sales Orders (SO)', table: 'so_master', recalc: 'so',
+    show: ['id','so_number','party_id','from_id','to_id','mt','rate_given','rate_received','converted','status'],
+    fields: [['so_number','SO Number','t'],['party_id','Party','party'],['from_id','From (Loading Point)','place'],['to_id','To (Destination)','place'],
+      ['mt','MT','n'],['rate_given','Rate Given (Party)','n'],['given_labour_type','Given Labour Type','s:Exclusive|Inclusive'],
+      ['rate_received','Rate Received (Lorry)','n'],['rec_labour_type','Rec Labour Type','s:Exclusive|Inclusive'],['loading_charge','Loading Charge','n'],
+      ['converted','Converted','s:YES|NO|PENDING'],['status','Status','t'],['remarks','Remarks','t'],
+      ['allocated','Allocated','b'],['documentation_status','Documentation Done','b'],['mf_status','MF Done','b'],['unloading_status','Unloading Done','b'],['profit_status','Profit Done','b'],
+      ['effective_given','Effective Given','n',1],['effective_rec','Effective Received','n',1],['margin_per_mt','Margin / MT','n',1],['total_margin','Total Margin','n',1]] },
+  trip: { label: 'Trip & Dispatch', table: 'trip_dispatch_master',
+    show: ['id','so_number','lorry_no','loading_date','destination','broker_id','final_mt','trip_status','dispatch_status'],
+    fields: [['so_number','SO Number','t'],['lorry_no','Lorry No','t'],['consignor','Consignor','t'],['consignee','Consignee','t'],['destination','Destination','t'],
+      ['broker_id','Broker','broker'],['broker_acc','Broker Acc No','t'],['broker_ifsc','Broker IFSC','t'],['bal_acc','Balance Acc No','t'],['bal_ifsc','Balance IFSC','t'],
+      ['broker_contact','Broker Contact','t'],['driver_contact','Driver Contact','t'],['trip_status','Trip Status','t'],
+      ['loading_date','Loading Date','d'],['gc_no','GC / LR No','t'],['invoice_no','Invoice No','t'],['eway_bill_no','E-way Bill No','t'],['eway_expiry','E-way Expiry','d'],
+      ['destination_gc','Destination (GC)','t'],['items','Items','t'],['pkgs','PKGS','t'],['articles','Articles','n'],['final_mt','Final MT','n'],['dispatch_status','Dispatch Status','t']] },
+  mf: { label: 'MF Accounts', table: 'mf_master', recalc: 'mf',
+    show: ['id','mf_no','so_number','lorry_no','final_mt','pmt_rate','freight_mf','advance','balance','total_cost'],
+    fields: [['mf_no','MF No','t'],['so_number','SO Number','t'],['lorry_no','Lorry No','t'],['pmt_rate','PMT Rate','n'],['final_mt','Final MT','n'],
+      ['other_expense','Other Expense','n'],['l_m','L/M','n'],['p_m','P/M','n'],['advance','Advance','n'],['diesel','Diesel','n'],['diesel_paid','Diesel Paid','n'],
+      ['diesel_payment_type','Diesel Payment Type','t'],['diesel_ref','Diesel Ref','t'],['diesel_card','Diesel Card','t'],['other','Other (+)','n'],
+      ['loading_labour','Loading Labour','n'],['fooding','Fooding','n'],['con','Con','n'],['unloading','Unloading','n'],['xerox','Xerox','n'],['detention','Detention','n'],
+      ['extra_point','Extra Point','n'],['other_chrg','Other Charges','n'],['extra_labour','Extra Labour','n'],['bill_pmt','Bill PMT (Party Rate)','n'],
+      ['total_freight','Total Freight','n',1],['freight_mf','MF Freight','n',1],['balance','Balance','n',1],['total_exp','Total Exp','n',1],['total_cost','Total Cost','n',1],['bilti_freight','Bilti Freight','n',1]] },
+  unl: { label: 'Unloading', table: 'unloading_master',
+    show: ['id','so_number','mf_no','lorry_no','unloading_date'],
+    fields: [['so_number','SO Number','t'],['mf_no','MF No','t'],['lorry_no','Lorry No','t'],['unloading_date','Unloading Date','d']] },
+  profit: { label: 'Profit', table: 'profit_master', recalc: 'profit',
+    show: ['id','so_number','mf_no','bilti_freight','total_cost','gross_profit','gp_on_sale'],
+    fields: [['so_number','SO Number','t'],['mf_no','MF No','t'],['bilti_freight','Bilti Freight','n'],['extra_chrg','Extra Charge','n'],['total_cost','Total Cost','n'],['deduction','Deduction','n'],
+      ['total_revenue','Total Revenue','n',1],['gross_profit','Gross Profit','n',1],['gp_on_sale','GP % on Sale','n',1],['gp_on_purchase','GP % on Purchase','n',1]] },
+  acct: { label: 'Account Payment', table: 'account_master',
+    show: ['id','mf_no','lorry_no','broker_name','advance_amount','balance_amount','adv_status','bal_status','overall_status'],
+    fields: [['mf_no','MF No','t'],['so_number','SO Number','t'],['lorry_no','Lorry No','t'],['loading_date','Loading Date','d'],['broker_name','Broker Name','t'],
+      ['adv_acc_no','Advance Acc No','t'],['adv_ifsc','Advance IFSC','t'],['bal_acc_no','Balance Acc No','t'],['bal_ifsc','Balance IFSC','t'],
+      ['advance_amount','Advance Amount','n'],['balance_amount','Balance Amount','n'],['adv_paid_amount','Advance Paid','n'],['adv_txn_id','Advance Txn ID','t'],
+      ['bal_paid_amount','Balance Paid','n'],['bal_txn_id','Balance Txn ID','t'],['adv_status','Advance Status','t'],['bal_status','Balance Status','t'],
+      ['overall_status','Overall Status','s:PENDING|BAL_PENDING|COMPLETED']] },
+  party: { label: 'Master — Party', table: 'party_master', show: ['id','party_name','contact','gst','status'],
+    fields: [['party_name','Party Name','t'],['contact','Contact','t'],['gst','GST','t'],['status','Status','s:ACTIVE|INACTIVE']] },
+  place: { label: 'Master — Place', table: 'place_master', show: ['id','place_name','state_code'],
+    fields: [['place_name','Place Name','t'],['state_code','State Code','t']] },
+  broker: { label: 'Master — Broker', table: 'broker_master', show: ['id','broker_name','primary_acc_no','ifsc','contact_no','status'],
+    fields: [['broker_name','Broker Name','t'],['primary_acc_no','Primary Acc No','t'],['ifsc','IFSC','t'],['secondary_acc_no','Secondary Acc No','t'],['secondary_ifsc','Secondary IFSC','t'],
+      ['contact_no','Contact No','t'],['status','Status','s:ACTIVE|INACTIVE']] },
+  card: { label: 'Master — Card', table: 'card_master', show: ['id','card_display','status'],
+    fields: [['card_display','Card Display','t'],['status','Status','s:ACTIVE|INACTIVE']] }
+};
+const _df = { key: 'so', rows: [], q: '', page: 1, per: 25 };
+const _dfEsc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const _dfSpec = (cfg, col) => cfg.fields.find(f => f[0] === col) || [col, col === 'id' ? 'ID' : col, 't'];
+
+function _dfDisp(cfg, col, v) {
+  if (v === null || v === undefined || v === '') return '<span style="color:var(--ink4)">—</span>';
+  const t = _dfSpec(cfg, col)[2];
+  if (t === 'b') return v ? '<span class="badge b-yes">YES</span>' : '<span class="badge b-no">NO</span>';
+  if (t === 'party') { const p = state.parties.find(x => String(x.Party_ID) === String(v)); return _dfEsc(p ? p.Party_Name : v); }
+  if (t === 'place') { const p = state.places.find(x => String(x.Place_ID) === String(v));   return _dfEsc(p ? p.Place_Name : v); }
+  if (t === 'broker'){ const p = state.brokers.find(x => String(x.Broker_ID) === String(v)); return _dfEsc(p ? p.Broker_Name : v); }
+  if (t === 'n') return Number(v).toLocaleString('en-IN', { maximumFractionDigits: 3 });
+  return _dfEsc(v);
+}
+function _dfPlain(cfg, col, v) { return _dfDisp(cfg, col, v).replace(/<[^>]*>/g, '').toLowerCase(); }
+
+async function renderDataFix() {
+  try { await loadMasters(); } catch (e) {}
+  const opts = Object.keys(DF).map(k => '<option value="' + k + '"' + (k === _df.key ? ' selected' : '') + '>' + DF[k].label + '</option>').join('');
+  setContent(
+    '<div class="section-card">'
+    + '<div class="section-title"><span>&#9998; Edit / Delete Data</span>'
+    + '<span style="font-size:11px;font-weight:400;color:var(--ink3)">' + (auth.isAdmin() ? 'Admin — you can edit and delete' : 'You can edit. Delete is Admin-only') + '</span></div>'
+    + '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px">'
+    +   '<div class="form-group" style="margin:0;min-width:220px"><label>Select Data</label><select id="df-table" onchange="_dfLoad(this.value)">' + opts + '</select></div>'
+    +   '<div class="form-group" style="margin:0;flex:1;min-width:200px"><label>Search</label><input type="text" id="df-q" placeholder="Type to filter rows…" oninput="_dfSearch(this.value)"></div>'
+    +   '<button class="btn btn-outline btn-sm" onclick="_dfLoad(_df.key)">&#8634; Refresh</button>'
+    + '</div>'
+    + '<div id="df-body"><div class="loading"><span class="spinner"></span>Loading…</div></div></div>'
+  );
+  _dfLoad(_df.key);
+}
+async function _dfLoad(key) {
+  _df.key = key; _df.q = ''; _df.page = 1;
+  const qi = document.getElementById('df-q'); if (qi) qi.value = '';
+  const body = document.getElementById('df-body'); if (!body) return;
+  body.innerHTML = '<div class="loading"><span class="spinner"></span>Loading…</div>';
+  try { _df.rows = await sb(DF[key].table, 'GET', null, '?select=*&order=id.desc&limit=1000'); }
+  catch (e) { body.innerHTML = '<div class="loading" style="color:var(--red)">Could not load: ' + _dfEsc(e.message) + '</div>'; return; }
+  _dfDraw();
+}
+function _dfSearch(q) { _df.q = String(q || '').toLowerCase().trim(); _df.page = 1; _dfDraw(); }
+function _dfGo(p) { _df.page = p; _dfDraw(); }
+function _dfDraw() {
+  const cfg = DF[_df.key], body = document.getElementById('df-body'); if (!body) return;
+  const rows = _df.q ? _df.rows.filter(r => cfg.show.some(c => _dfPlain(cfg, c, r[c]).indexOf(_df.q) >= 0)) : _df.rows;
+  const pages = Math.max(1, Math.ceil(rows.length / _df.per));
+  if (_df.page > pages) _df.page = pages;
+  const slice = rows.slice((_df.page - 1) * _df.per, _df.page * _df.per);
+  const canDel = auth.isAdmin();
+  const head = cfg.show.map(c => '<th>' + _dfEsc(_dfSpec(cfg, c)[1]) + '</th>').join('') + '<th style="text-align:right;white-space:nowrap">Actions</th>';
+  const trs = slice.map(r => '<tr>' + cfg.show.map(c => {
+      const t = _dfSpec(cfg, c)[2];
+      return '<td' + (t === 'n' ? ' style="text-align:right"' : '') + '>' + _dfDisp(cfg, c, r[c]) + '</td>';
+    }).join('')
+    + '<td style="text-align:right;white-space:nowrap"><button class="btn btn-outline btn-sm" onclick="_dfEdit(' + r.id + ')">&#9998; Edit</button>'
+    + (canDel ? '<button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="_dfDel(' + r.id + ')">&#10005; Delete</button>' : '') + '</td></tr>').join('');
+  let pager = '';
+  if (pages > 1) pager = '<div style="display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:10px;font-size:12px;color:var(--ink3)">'
+    + '<button class="btn btn-outline btn-sm"' + (_df.page <= 1 ? ' disabled' : '') + ' onclick="_dfGo(' + (_df.page - 1) + ')">&#8249; Prev</button>'
+    + 'Page ' + _df.page + ' of ' + pages
+    + '<button class="btn btn-outline btn-sm"' + (_df.page >= pages ? ' disabled' : '') + ' onclick="_dfGo(' + (_df.page + 1) + ')">Next &#8250;</button></div>';
+  body.innerHTML = '<div style="font-size:11px;color:var(--ink3);margin-bottom:8px">' + rows.length + ' record(s)'
+    + (_df.rows.length >= 1000 ? ' — showing the latest 1000, use Search to narrow' : '') + '</div>'
+    + '<div class="table-wrap"><table><thead><tr>' + head + '</tr></thead><tbody>'
+    + (trs || '<tr><td colspan="' + (cfg.show.length + 1) + '" class="loading">No records found</td></tr>') + '</tbody></table></div>' + pager;
+}
+
+// ---- auto-recalculation of derived columns (same formulas the entry screens use) ----
+function _dfRecalc(kind, d) {
+  const f = v => parseFloat(v) || 0, o = {};
+  if (kind === 'so') {
+    const mt = f(d.mt), pr = f(d.rate_given), lr = f(d.rate_received), lc = f(d.loading_charge);
+    o.effective_given = d.given_labour_type === 'Inclusive' ? pr : pr + lc;
+    o.effective_rec   = d.rec_labour_type   === 'Inclusive' ? lr : lr + lc;
+    o.margin_per_mt   = o.effective_given - o.effective_rec;
+    o.total_margin    = o.margin_per_mt * mt;
+  } else if (kind === 'mf') {
+    const mt = f(d.final_mt);
+    o.total_freight = mt * f(d.pmt_rate);
+    o.freight_mf    = o.total_freight - f(d.l_m) - f(d.p_m) + f(d.other_expense);
+    o.balance       = o.freight_mf - f(d.advance) - f(d.diesel) + f(d.other);
+    o.total_exp     = f(d.loading_labour) + f(d.fooding) + f(d.con) + f(d.unloading) + f(d.xerox) + f(d.detention) + f(d.extra_point) + f(d.other_chrg);
+    o.total_cost    = o.freight_mf + o.total_exp + f(d.extra_labour);
+    o.bilti_freight = f(d.bill_pmt) * mt;
+  } else if (kind === 'profit') {
+    const bilti = f(d.bilti_freight), extra = f(d.extra_chrg), cost = f(d.total_cost), ded = f(d.deduction);
+    o.total_revenue  = bilti + extra;
+    o.gross_profit   = bilti - cost - ded;
+    o.gp_on_sale     = o.total_revenue > 0 ? Math.round((o.total_revenue - cost) / o.total_revenue * 100) : 0;
+    o.gp_on_purchase = cost > 0 ? Math.round(o.gross_profit / cost * 100) : 0;
+  }
+  Object.keys(o).forEach(k => { o[k] = Math.round(o[k] * 100) / 100; });
+  return o;
+}
+
+// ---- Edit ----
+function _dfInput(spec, v) {
+  const id = 'dff-' + spec[0], t = spec[2], ro = spec[3];
+  if (ro) return '<input type="text" id="' + id + '" value="' + _dfEsc(v == null ? '' : v) + '" disabled style="background:var(--canvas)">';
+  if (t === 'n') return '<input type="number" step="any" id="' + id + '" value="' + _dfEsc(v == null ? '' : v) + '">';
+  if (t === 'd') return '<input type="date" id="' + id + '" value="' + _dfEsc(v ? String(v).slice(0, 10) : '') + '">';
+  if (t === 'b') return '<select id="' + id + '"><option value="true"' + (v ? ' selected' : '') + '>YES</option><option value="false"' + (!v ? ' selected' : '') + '>NO</option></select>';
+  let list = null, val = v;
+  if (t === 'party')  list = state.parties.map(x => [x.Party_ID, x.Party_Name]);
+  if (t === 'place')  list = state.places.map(x => [x.Place_ID, x.Place_Name]);
+  if (t === 'broker') list = state.brokers.map(x => [x.Broker_ID, x.Broker_Name]);
+  if (t.indexOf('s:') === 0) { list = t.slice(2).split('|').map(x => [x, x]); if (v && !list.some(x => String(x[0]) === String(v))) list.push([v, v]); }
+  if (list) {
+    if (v != null && v !== '' && !list.some(x => String(x[0]) === String(v))) list.push([v, v]);
+    return '<select id="' + id + '"><option value="">— none —</option>' + list.map(x => '<option value="' + _dfEsc(x[0]) + '"' + (String(x[0]) === String(val) ? ' selected' : '') + '>' + _dfEsc(x[1]) + '</option>').join('') + '</select>';
+  }
+  return '<input type="text" id="' + id + '" value="' + _dfEsc(v == null ? '' : v) + '">';
+}
+function _dfClose() { const m = document.getElementById('df-modal'); if (m) m.remove(); }
+function _dfEdit(id) {
+  const cfg = DF[_df.key], row = _df.rows.find(r => r.id === id); if (!row) return;
+  _dfClose();
+  const grid = cfg.fields.map(sp => '<div class="form-group"><label>' + _dfEsc(sp[1]) + (sp[3] ? ' <span style="color:var(--ink4);font-weight:400">(auto)</span>' : '') + '</label>' + _dfInput(sp, row[sp[0]]) + '</div>').join('');
+  const m = document.createElement('div'); m.id = 'df-modal'; m.className = 'df-ov';
+  m.innerHTML = '<div class="df-box"><div class="df-head"><span>&#9998; Edit — ' + _dfEsc(cfg.label) + ' &nbsp;#' + id + '</span><button class="btn btn-outline btn-sm" onclick="_dfClose()">&#10005;</button></div>'
+    + '<div class="df-body">' + grid + '</div>'
+    + '<div class="df-foot">'
+    + (cfg.recalc ? '<label style="font-size:12px;display:flex;gap:6px;align-items:center;margin-right:auto"><input type="checkbox" id="df-recalc" checked> Auto-recalculate the (auto) totals</label>'
+        : '<span style="font-size:11px;color:var(--ink4);margin-right:auto">Linked records are not changed by this edit.</span>')
+    + '<button class="btn btn-outline btn-sm" onclick="_dfClose()">Cancel</button><button class="btn btn-primary btn-sm" onclick="_dfSave(' + id + ')">Save Changes</button></div></div>';
+  document.body.appendChild(m);
+}
+async function _dfSave(id) {
+  const cfg = DF[_df.key], row = _df.rows.find(r => r.id === id); if (!row) return;
+  const changes = {};
+  cfg.fields.forEach(sp => {
+    if (sp[3]) return;
+    const el = document.getElementById('dff-' + sp[0]); if (!el) return;
+    const t = sp[2], raw = el.value, old = row[sp[0]];
+    let nv;
+    if (t === 'n') nv = raw.trim() === '' ? null : parseFloat(raw);
+    else if (t === 'd') nv = raw || null;
+    else if (t === 'b') nv = raw === 'true';
+    else if (t === 'party' || t === 'place' || t === 'broker') nv = raw === '' ? null : (isNaN(+raw) ? raw : +raw);
+    else nv = raw.trim();
+    const same = (t === 'b') ? (!!old === nv) : (t === 'n') ? ((old == null || old === '') ? nv === null : parseFloat(old) === nv)
+      : ((old == null ? '' : String(old)) === (nv == null ? '' : String(nv)));
+    if (!same) changes[sp[0]] = (t === 'n' || t === 'd' || t === 'party' || t === 'place' || t === 'broker') ? nv : (nv === '' ? null : nv);
+  });
+  if (!Object.keys(changes).length) { toast('No changes made', 'error'); return; }
+  const rc = document.getElementById('df-recalc');
+  if (cfg.recalc && rc && rc.checked) {
+    const der = _dfRecalc(cfg.recalc, Object.assign({}, row, changes));
+    Object.keys(der).forEach(k => { if (parseFloat(row[k]) !== der[k]) changes[k] = der[k]; });
+  }
+  try {
+    await sb(cfg.table, 'PATCH', changes, '?id=eq.' + id);
+    toast('Record updated ✓');
+    _dfClose();
+    const q = _df.q, pg = _df.page;
+    await _dfLoad(_df.key);
+    if (q) { const qi = document.getElementById('df-q'); if (qi) qi.value = q; _df.q = q; _df.page = pg; _dfDraw(); }
+  } catch (e) { toast('Update failed: ' + (e.message || e), 'error'); }
+}
+
+// ---- Delete (ADMIN only) ----
+async function _dfDel(id) {
+  if (!auth.isAdmin()) { toast('Only Admin can delete data', 'error'); return; }
+  const key = _df.key, cfg = DF[key], row = _df.rows.find(r => r.id === id); if (!row) return;
+  const name = row.so_number || row.mf_no || row.lorry_no || row.party_name || row.place_name || row.broker_name || row.card_display || ('#' + id);
+  if (key === 'so') {
+    const t = prompt('Delete SO "' + name + '" AND all its linked Trip/Dispatch, MF, Unloading, Profit and Account records?\n\nThis cannot be undone. Type DELETE to confirm:');
+    if (t !== 'DELETE') return;
+  } else if (!confirm('Delete this record (' + cfg.label + ' — ' + name + ')?\nThis cannot be undone.')) return;
+  const noneLeft = async (table, col, val) => (await sb(table, 'GET', null, '?select=id&' + col + '=eq.' + encodeURIComponent(val) + '&limit=1')).length === 0;
+  try {
+    if (key === 'so') {
+      for (const t of ['profit_master', 'unloading_master', 'account_master', 'mf_master', 'trip_dispatch_master']) await sb(t, 'DELETE', null, '?so_id=eq.' + id);
+      await sb('so_master', 'DELETE', null, '?id=eq.' + id);
+    } else if (key === 'mf') {
+      if (row.mf_no) await sb('account_master', 'DELETE', null, '?mf_no=eq.' + encodeURIComponent(row.mf_no));
+      await sb('mf_master', 'DELETE', null, '?id=eq.' + id);
+      if (row.so_id && await noneLeft('mf_master', 'so_id', row.so_id)) await sb('so_master', 'PATCH', { mf_status: false }, '?id=eq.' + row.so_id);
+    } else if (key === 'trip') {
+      await sb('trip_dispatch_master', 'DELETE', null, '?id=eq.' + id);
+      if (row.so_id && await noneLeft('trip_dispatch_master', 'so_id', row.so_id)) await sb('so_master', 'PATCH', { allocated: false, documentation_status: false }, '?id=eq.' + row.so_id);
+    } else if (key === 'unl') {
+      await sb('unloading_master', 'DELETE', null, '?id=eq.' + id);
+      if (row.so_id && await noneLeft('unloading_master', 'so_id', row.so_id)) await sb('so_master', 'PATCH', { unloading_status: false }, '?id=eq.' + row.so_id);
+    } else if (key === 'profit') {
+      await sb('profit_master', 'DELETE', null, '?id=eq.' + id);
+      if (row.so_id && await noneLeft('profit_master', 'so_id', row.so_id)) await sb('so_master', 'PATCH', { profit_status: false }, '?id=eq.' + row.so_id);
+    } else {
+      await sb(cfg.table, 'DELETE', null, '?id=eq.' + id);
+    }
+    if (['party', 'place', 'broker', 'card'].indexOf(key) >= 0) { try { await loadMasters(true); } catch (e) {} }
+    toast('Record deleted ✓');
+    const q = _df.q; await _dfLoad(key);
+    if (q) { const qi = document.getElementById('df-q'); if (qi) qi.value = q; _df.q = q; _dfDraw(); }
+  } catch (e) {
+    const msg = String(e.message || e);
+    toast(msg.indexOf('23503') >= 0 ? 'Cannot delete — this record is used by other records. Delete those first.' : 'Delete failed: ' + msg, 'error');
+  }
 }
 
 // =============================================
