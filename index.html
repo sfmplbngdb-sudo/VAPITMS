@@ -672,6 +672,100 @@ table tfoot td { padding: 7px 10px; color: #fff; font-size: 11px; font-weight: 7
   tfoot tr { background: #222 !important; -webkit-print-color-adjust: exact; }
 }
 
+/* ============ GLOBAL UI REFINEMENT (styling only — no logic touched) ============ */
+:root{--r:8px;--sh1:0 1px 2px rgba(16,24,40,.05);--sh2:0 4px 14px rgba(16,24,40,.09);--ease:.16s ease}
+html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+::selection{background:#b6d4fb}
+body{font-size:13px;letter-spacing:.005em}
+/* sidebar */
+#sidebar{background:linear-gradient(180deg,#14263f 0%,#0f1d31 100%);box-shadow:2px 0 12px rgba(0,0,0,.12)}
+.sidebar-logo{padding:18px 18px 16px}
+.logo-badge{border-radius:9px;background:linear-gradient(135deg,#539bf5,#2f6fd6);box-shadow:0 2px 8px rgba(83,155,245,.4)}
+.nav-group-label{padding:14px 18px 5px;letter-spacing:.14em}
+.nav-item{margin:1px 8px;width:calc(100% - 16px);padding:8px 12px;border-radius:7px;border-left:none;transition:background var(--ease),color var(--ease),transform var(--ease)}
+.nav-item:hover{transform:translateX(2px)}
+.nav-item.active{background:linear-gradient(90deg,#24508a,#1f4068);box-shadow:inset 3px 0 0 var(--sb-accent),0 1px 4px rgba(0,0,0,.25)}
+.nav-divider{margin:8px 14px}
+.sidebar-footer{background:rgba(0,0,0,.14)}
+/* topbar */
+#topbar{height:54px;padding:0 24px;box-shadow:0 1px 0 var(--border),0 2px 8px rgba(16,24,40,.04)}
+.page-title{font-size:15px;letter-spacing:-.01em}
+.user-chip{border-radius:999px;padding:4px 12px 4px 4px;background:var(--canvas);transition:box-shadow var(--ease)}
+.user-chip:hover{box-shadow:var(--sh1)}
+.user-avatar{background:linear-gradient(135deg,#1f4068,#13233a);width:26px;height:26px}
+#content{padding:22px 24px;scroll-behavior:smooth}
+#content::-webkit-scrollbar{width:8px}
+#content::-webkit-scrollbar-thumb{background:#c4ccd4;border-radius:8px;border:2px solid var(--canvas)}
+#content::-webkit-scrollbar-thumb:hover{background:#9aa5b1}
+/* cards */
+.stat-grid{gap:14px;margin-bottom:18px}
+.stat-card,.chart-card,.section-card,.payment-card{border-radius:var(--r);box-shadow:var(--sh1);transition:box-shadow var(--ease),transform var(--ease)}
+.stat-card{padding:16px 18px}
+.stat-card:hover,.chart-card:hover{box-shadow:var(--sh2);transform:translateY(-1px)}
+.stat-value{font-size:26px}
+.stat-badge,.badge,.status-pill,.user-role-badge{border-radius:999px;padding-left:9px;padding-right:9px}
+.chart-grid{gap:14px}
+.chart-title,.section-title{letter-spacing:.07em}
+.section-card{padding:18px 20px;margin-bottom:16px}
+.section-title{position:relative;padding-bottom:12px}
+.section-title::after{content:"";position:absolute;left:0;bottom:-1px;width:38px;height:2px;background:var(--blue);border-radius:2px}
+/* forms */
+.form-grid,.form-grid-2,.form-grid-4{gap:14px}
+label{letter-spacing:.06em}
+input,select,textarea{border-radius:6px;padding:8px 10px;border-color:#c9d1d9;transition:border-color var(--ease),box-shadow var(--ease),background var(--ease)}
+input:hover,select:hover,textarea:hover{border-color:var(--border2)}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px rgba(9,105,218,.18)}
+input::placeholder,textarea::placeholder{color:#a3acb5}
+.calc-field{border-radius:6px !important}
+.form-divider{margin-top:8px;padding:10px 0 4px;color:var(--blue-dk)}
+.form-actions{margin-top:20px;padding-top:16px}
+/* buttons */
+.btn{border-radius:7px;padding:7px 16px;transition:background var(--ease),box-shadow var(--ease),transform var(--ease),border-color var(--ease)}
+.btn:hover{box-shadow:0 2px 8px rgba(16,24,40,.14);transform:translateY(-1px)}
+.btn:active{transform:translateY(0);box-shadow:none}
+.btn:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(9,105,218,.3)}
+.btn-primary{background:linear-gradient(180deg,#1a7af0,#0969da)}
+.btn-success{background:linear-gradient(180deg,#22963f,#1a7f37)}
+.btn-danger{background:linear-gradient(180deg,#e0303c,#cf222e)}
+.btn-sm{padding:5px 11px;border-radius:6px}
+.btn[disabled]{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+/* tables */
+.table-wrap{border-radius:var(--r);box-shadow:var(--sh1);background:var(--surface)}
+thead tr{background:linear-gradient(180deg,#17304f,#13233a)}
+th{padding:10px 12px;letter-spacing:.07em}
+td{padding:9px 12px}
+tbody tr{transition:background var(--ease)}
+.pagination{margin-top:14px;gap:5px}
+.page-btn{border-radius:7px;width:30px;height:30px;transition:all var(--ease)}
+/* filters / tabs */
+.filter-bar{padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh1)}
+.search-wrap input{padding-left:30px}
+.rpt-filter-bar{border-radius:var(--r);box-shadow:var(--sh1);background:var(--surface)}
+.tabs{gap:2px}
+.tab{padding:9px 18px;border-radius:7px 7px 0 0;transition:background var(--ease),color var(--ease)}
+.tab:hover{background:var(--canvas)}
+.so-info-box{border-radius:var(--r);box-shadow:var(--sh1);background:linear-gradient(90deg,#f3f8ff,var(--canvas))}
+.acct-amount-display,.bank-detail-box{border-radius:var(--r)}
+.payment-card-icon{border-radius:9px}
+/* toast */
+.toast{border-radius:var(--r);box-shadow:var(--sh2);animation:tIn .22s ease}
+@keyframes tIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+/* login */
+#login-screen{background:radial-gradient(ellipse at 20% 15%,#24508a 0%,#14263f 45%,#0b1626 100%)}
+.login-box{border-radius:14px;padding:40px 42px;border:none;box-shadow:0 20px 60px rgba(0,0,0,.45);animation:tIn .35s ease}
+.login-logo-badge{border-radius:11px;background:linear-gradient(135deg,#539bf5,#2f6fd6);box-shadow:0 3px 10px rgba(83,155,245,.45)}
+.login-field input{border-radius:8px;padding:11px 13px;transition:border-color var(--ease),box-shadow var(--ease)}
+.login-field input:focus{outline:none;box-shadow:0 0 0 3px rgba(9,105,218,.18)}
+.login-btn{border-radius:8px;padding:12px;background:linear-gradient(180deg,#1f4068,#13233a);transition:transform var(--ease),box-shadow var(--ease)}
+.login-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(19,35,58,.4)}
+.login-error{border-radius:8px}
+.loading{padding:36px}
+/* responsive */
+@media (max-width:1180px){.stat-grid,.form-grid-4{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:900px){.chart-grid,.form-grid,.so-info-grid{grid-template-columns:1fr 1fr}#content{padding:16px}}
+@media (max-width:640px){.stat-grid,.chart-grid,.form-grid,.form-grid-2,.form-grid-4,.so-info-grid{grid-template-columns:1fr}.login-box{width:92vw;padding:28px 22px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
 /* ============ MASTER REPORT — refined UI (scoped) ============ */
 .mr-filters{background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:12px;box-shadow:0 1px 2px rgba(16,24,40,.04);overflow:hidden}
 .mr-filters-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 14px;background:linear-gradient(180deg,#fbfcfd,#f6f8fa);border-bottom:1px solid var(--divider)}
@@ -974,8 +1068,8 @@ function fmtNum(n) { return Number(n||0).toLocaleString('en-IN'); }
 // SUPABASE CONFIG — Replace with your project credentials
 // Get these from: supabase.com → Project → Settings → API
 // ═══════════════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://nstaqzkzyahohcdqorsc.supabase.co';
-const SUPABASE_ANON = 'sb_publishable_ynnkfxNqBvJYcOx4U-mHVA_-kdH1DQF';
+const SUPABASE_URL  = 'https://vrwgjasxossyxxccfnra.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_OsFp30w0nGxdyOGvDm3ybQ_UY9dHAfv';
 
 // ── Low-level Supabase REST helper ──────────────────────────
 async function sb(table, method, body, query) {
@@ -1082,9 +1176,9 @@ const SB = {
     let soNumber = '';
     if (d.Converted === 'YES') {
       const rows = await sb('so_master', 'GET', null, '?so_number=not.is.null&order=so_number.desc&limit=1');
-      const last = rows[0]?.so_number || 'SFMPL/0268/000';
+      const last = rows[0]?.so_number || 'SFMPL/08284/000';
       const num = parseInt(last.split('/')[2]||'0') + 1;
-      soNumber = 'SFMPL/0268/' + String(num).padStart(3,'0');
+      soNumber = 'SFMPL/08284/' + String(num).padStart(3,'0');
     }
     const row = await sb('so_master', 'POST', { so_number: soNumber, party_id: d.Party_ID, from_id: d.From_ID, to_id: d.To_ID, mt, rate_given: pr, given_labour_type: d.Given_Labour_Type, rate_received: lr, rec_labour_type: d.Rec_Labour_Type, loading_charge: lc, effective_given: effParty, effective_rec: effLorry, margin_per_mt: marginMT, total_margin: totalMargin, converted: d.Converted, status: d.Status||'ACTIVE', remarks: d.Remarks||'', allocated: false, documentation_status: false, mf_status: false, unloading_status: false, profit_status: false, created_by: d.Created_By||(auth.user?auth.user.username:'admin') });
     return { success: true, id: row[0]?.id, SO_Number: soNumber };
@@ -1095,9 +1189,9 @@ const SB = {
       const rows = await sb('so_master', 'GET', null, '?id=eq.' + d.SO_ID);
       if (rows[0] && !rows[0].so_number) {
         const latest = await sb('so_master', 'GET', null, '?so_number=not.is.null&order=so_number.desc&limit=1');
-        const last = latest[0]?.so_number || 'SFMPL/0268/000';
+        const last = latest[0]?.so_number || 'SFMPL/08284/000';
         const num = parseInt(last.split('/')[2]||'0') + 1;
-        updates.so_number = 'SFMPL/0268/' + String(num).padStart(3,'0');
+        updates.so_number = 'SFMPL/08284/' + String(num).padStart(3,'0');
       }
     }
     await sb('so_master', 'PATCH', updates, '?id=eq.' + d.SO_ID);
@@ -4411,7 +4505,7 @@ async function renderReport() {
         <div class="mr-grid">
           <div class="form-group">
             <label>SO Number</label>
-            <input type="text" id="rf-so" placeholder="e.g. SFMPL/0268/001">
+            <input type="text" id="rf-so" placeholder="e.g. SFMPL/08284/001">
           </div>
           <div class="form-group">
             <label>Lorry No</label>
