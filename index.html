@@ -821,6 +821,32 @@ tbody tr{transition:background var(--ease)}
 .mr-empty b{display:block;font-size:14px;color:var(--ink3);margin-bottom:4px}
 @media (max-width:760px){.mr-date-box{width:100%}.mr-scroll{max-height:none}}
 @media print{.mr-filters,.mr-chips,.mr-active{display:none!important}.mr-scroll{max-height:none;overflow:visible}.mr-scroll thead th,.mr-scroll tfoot td{position:static}.mr-scroll tbody td:first-child{position:static;box-shadow:none}.mr-panel,.mr-stat{box-shadow:none}}
+
+/* ---- sortable headers, row #, e-way alerts, mobile menu ---- */
+.mr-scroll thead th.srt{cursor:pointer;user-select:none}
+.mr-scroll thead th.srt:hover{background:#1c3151}
+.mr-scroll thead th.srt .ar{opacity:.35;margin-left:4px;font-size:9px}
+.mr-scroll thead th.srt.on .ar{opacity:1;color:#f2cc60}
+.mr-idx{display:inline-block;min-width:22px;margin-right:7px;padding:0 5px;text-align:center;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--ink4);background:var(--canvas);border:1px solid var(--border);border-radius:5px}
+.mr-scroll thead th .mr-idx{background:transparent;border-color:#35507a;color:var(--sb-text)}
+.ew{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700;border:1px solid transparent}
+.ew-x{background:var(--red-lt);color:var(--red);border-color:#ffcecb}
+.ew-w{background:var(--amber-lt);color:var(--amber);border-color:#f0dc8a}
+#menu-btn{display:none;border:1px solid var(--border);background:var(--surface);border-radius:7px;width:34px;height:34px;font-size:17px;cursor:pointer;margin-right:8px;color:var(--ink2)}
+@media (max-width:900px){
+  #menu-btn{display:inline-flex;align-items:center;justify-content:center}
+  #sidebar{position:fixed;top:0;bottom:0;left:-260px;width:240px;z-index:1000;transition:left .22s ease}
+  body.sb-open #sidebar{left:0}
+  body.sb-open::after{content:"";position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999}
+  #topbar{padding:0 12px}.page-sub{display:none}
+}
+
+.mr-colpanel{display:none;flex-wrap:wrap;gap:6px 16px;padding:10px 14px;border-bottom:1px solid var(--divider);background:#fbfcfd}
+.mr-colpanel label{text-transform:none;font-size:12px;font-weight:600;letter-spacing:0;display:flex;gap:5px;align-items:center;cursor:pointer}
+.mr-colpanel input{width:auto}
+.mr-pbtn{padding:2px 8px!important;font-size:10px!important;margin-right:3px}
+.wt{display:inline-block;padding:1px 8px;border-radius:999px;font-size:10px;font-weight:700;border:1px solid transparent}
+.wt-0{background:var(--blue-lt);color:var(--blue-dk);border-color:#b6d4fb}.wt-1{background:var(--amber-lt);color:var(--amber);border-color:#f0dc8a}.wt-2{background:var(--red-lt);color:var(--red);border-color:#ffcecb}
 </style>
 </head>
 <body>
@@ -1068,8 +1094,8 @@ function fmtNum(n) { return Number(n||0).toLocaleString('en-IN'); }
 // SUPABASE CONFIG — Replace with your project credentials
 // Get these from: supabase.com → Project → Settings → API
 // ═══════════════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://vrwgjasxossyxxccfnra.supabase.co';
-const SUPABASE_ANON = 'sb_publishable_OsFp30w0nGxdyOGvDm3ybQ_UY9dHAfv';
+const SUPABASE_URL  = 'https://nstaqzkzyahohcdqorsc.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_ynnkfxNqBvJYcOx4U-mHVA_-kdH1DQF';
 
 // ── Low-level Supabase REST helper ──────────────────────────
 async function sb(table, method, body, query) {
@@ -1176,9 +1202,9 @@ const SB = {
     let soNumber = '';
     if (d.Converted === 'YES') {
       const rows = await sb('so_master', 'GET', null, '?so_number=not.is.null&order=so_number.desc&limit=1');
-      const last = rows[0]?.so_number || 'SFMPL/08284/000';
+      const last = rows[0]?.so_number || 'SFMPL/0268/000';
       const num = parseInt(last.split('/')[2]||'0') + 1;
-      soNumber = 'SFMPL/08284/' + String(num).padStart(3,'0');
+      soNumber = 'SFMPL/0268/' + String(num).padStart(3,'0');
     }
     const row = await sb('so_master', 'POST', { so_number: soNumber, party_id: d.Party_ID, from_id: d.From_ID, to_id: d.To_ID, mt, rate_given: pr, given_labour_type: d.Given_Labour_Type, rate_received: lr, rec_labour_type: d.Rec_Labour_Type, loading_charge: lc, effective_given: effParty, effective_rec: effLorry, margin_per_mt: marginMT, total_margin: totalMargin, converted: d.Converted, status: d.Status||'ACTIVE', remarks: d.Remarks||'', allocated: false, documentation_status: false, mf_status: false, unloading_status: false, profit_status: false, created_by: d.Created_By||(auth.user?auth.user.username:'admin') });
     return { success: true, id: row[0]?.id, SO_Number: soNumber };
@@ -1189,9 +1215,9 @@ const SB = {
       const rows = await sb('so_master', 'GET', null, '?id=eq.' + d.SO_ID);
       if (rows[0] && !rows[0].so_number) {
         const latest = await sb('so_master', 'GET', null, '?so_number=not.is.null&order=so_number.desc&limit=1');
-        const last = latest[0]?.so_number || 'SFMPL/08284/000';
+        const last = latest[0]?.so_number || 'SFMPL/0268/000';
         const num = parseInt(last.split('/')[2]||'0') + 1;
-        updates.so_number = 'SFMPL/08284/' + String(num).padStart(3,'0');
+        updates.so_number = 'SFMPL/0268/' + String(num).padStart(3,'0');
       }
     }
     await sb('so_master', 'PATCH', updates, '?id=eq.' + d.SO_ID);
@@ -2912,10 +2938,23 @@ async function loadUnloadingTracking() {
       Done:         s.Unloading_Status === true || s.Unloading_Status === 'true' || s.Unloading_Status === 'TRUE'
     }));
 
+    try {   // read-only: loading dates from existing dispatch call, for waiting-days badge
+      const dr = await call('getDispatchData', 1), m = {};
+      ((dr && dr.data) || []).forEach(x => { if (x.so_id && x.loading_date) m[String(x.so_id)] = x.loading_date; });
+      _ulAllRows.forEach(r => { r.Loading_Date = m[String(r.SO_ID)] || ''; });
+    } catch(e) {}
     renderUnloadingTable(_ulAllRows);
   } catch(e) {
     if (wrap) wrap.innerHTML = `<div class="loading" style="color:var(--red)">Error: ${e.message||e}</div>`;
   }
+}
+
+function _ulWait(r) {
+  if (r.Done) return '<span style="color:var(--ink4)">—</span>';
+  const m = String(r.Loading_Date || '').slice(0,10).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return '<span style="color:var(--ink4)">—</span>';
+  const t = new Date(), d = Math.max(0, Math.round((Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()) - Date.UTC(+m[1], +m[2]-1, +m[3])) / 86400000));
+  return `<span class="wt wt-${d >= 7 ? 2 : d >= 3 ? 1 : 0}">${d} day${d === 1 ? '' : 's'}</span>`;
 }
 
 function renderUnloadingTable(rows) {
@@ -2943,6 +2982,7 @@ function renderUnloadingTable(rows) {
       <td class="mono" style="font-weight:700;color:var(--blue)">${r.SO_Number}</td>
       <td>${r.Party}</td>
       <td style="white-space:nowrap">${r.Route}</td>
+      <td>${_ulWait(r)}</td>
       <td>${statusPill}</td>
       <td>${actionBtn}</td>
     </tr>`;
@@ -2963,6 +3003,7 @@ function renderUnloadingTable(rows) {
           <th>SO Number</th>
           <th>Party</th>
           <th>Route</th>
+          <th>Waiting</th>
           <th>Status</th>
           <th>Action</th>
         </tr></thead>
@@ -4477,6 +4518,30 @@ function _rptFmtDate(v) {
   return m[3] + ' ' + _rptMon[parseInt(m[2],10)-1] + ' ' + m[1];
 }
 
+let _rptSort = { l: '', dir: 1 };
+function sortRpt(i) {
+  const c = getRptCols()[i]; if (!c) return;
+  if (_rptSort.l === c.l) { if (_rptSort.dir === 1) _rptSort.dir = -1; else _rptSort = { l: '', dir: 1 }; }
+  else _rptSort = { l: c.l, dir: 1 };
+  renderRptTable();
+}
+// days until e-way expiry (null if none / trip already unloaded or completed)
+function _rptEwayDays(r) {
+  if (!r.Eway_Expiry || String(r.Trip_Status||'') === 'COMPLETED' || r.Unloading_Status === true || r.Unloading_Status === 'true') return null;
+  const m = String(r.Eway_Expiry).slice(0,10).match(/^(\d{4})-(\d{2})-(\d{2})$/); if (!m) return null;
+  const t = new Date(); const today = Date.UTC(t.getFullYear(), t.getMonth(), t.getDate());
+  return Math.round((Date.UTC(+m[1], +m[2]-1, +m[3]) - today) / 86400000);
+}
+function _rptEway(r) {
+  const base = r.Eway_Expiry ? _rptFmtDate(r.Eway_Expiry) : '—';
+  const d = _rptEwayDays(r);
+  if (d === null) return base;
+  if (d < 0)  return base + `<span class="ew ew-x">Expired ${-d}d ago</span>`;
+  if (d === 0) return base + '<span class="ew ew-x">Expires today</span>';
+  if (d <= 2) return base + `<span class="ew ew-w">${d} day${d>1?'s':''} left</span>`;
+  return base;
+}
+
 async function renderReport() {
   showLoading();
   let filterOpts = { consignees: [], destinations: [] };
@@ -4511,7 +4576,7 @@ async function renderReport() {
         <div class="mr-grid">
           <div class="form-group">
             <label>SO Number</label>
-            <input type="text" id="rf-so" placeholder="e.g. SFMPL/08284/001">
+            <input type="text" id="rf-so" placeholder="e.g. SFMPL/0268/001">
           </div>
           <div class="form-group">
             <label>Lorry No</label>
@@ -4577,9 +4642,12 @@ async function renderReport() {
           <button class="mr-tab tab"        id="rtab-invoice" onclick="switchRptTab('invoice')">Invoice</button>
           <button class="mr-tab tab"        id="rtab-profit"  onclick="switchRptTab('profit')">Profit</button>
           <button class="mr-tab tab"        id="rtab-status"  onclick="switchRptTab('status')">SO Status</button>
+          <button class="mr-tab tab"        id="rtab-broker"  onclick="switchRptTab('broker')">Broker Ledger</button>
+          <button class="mr-tab tab"        id="rtab-party"   onclick="switchRptTab('party')">Party Ledger</button>
         </div>
-        <span class="mr-count" id="rpt-count">0 records</span>
+        <span style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><button class="btn btn-outline btn-sm" onclick="toggleRptCols()">▦ Columns</button><span class="mr-count" id="rpt-count" style="margin:0">0 records</span></span>
       </div>
+      <div class="mr-colpanel" id="mr-cols"></div>
       <div id="rpt-table-wrap"></div>
     </div>
   `);
@@ -4713,6 +4781,8 @@ function renderRptSummary() {
     { val: inr(sum('Total_Cost')),         lbl: 'Total Cost',      col: 'var(--red)',   sub: 'incl. expenses' },
     { val: inr(gp),                        lbl: 'Gross Profit',    col: gp >= 0 ? 'var(--green)' : 'var(--red)', sub: finalMT ? inr(gp/finalMT) + ' / MT' : '—' }
   ];
+  const ew = d.filter(r => { const x = _rptEwayDays(r); return x !== null && x <= 2; }).length;
+  if (ew) cards.push({ val: ew, lbl: 'E-Way Alerts', col: 'var(--red)', sub: 'expired / expiring ≤ 2 days' });
   el.innerHTML = cards.map(c =>
     `<div class="mr-stat" style="border-top-color:${c.col}">
       <div class="mr-stat-lbl">${c.lbl}</div>
@@ -4747,7 +4817,9 @@ function getRptCols() {
       {l:'L/M',        f:r=>inr(r.LM),           rt:true, money:true, k:'LM'},
       {l:'P/M',        f:r=>inr(r.PM),           rt:true, money:true, k:'PM'},
       {l:'Freight MF', f:r=>inr(r.Freight_MF),   rt:true, money:true, k:'Freight_MF'},
-      {l:'MF No',      f:r=>str(r.MF_No),        mono:true}
+      {l:'MF No',      f:r=>str(r.MF_No),        mono:true},
+      {l:'Print / Share', f:r=>{ if(!r.MF_No) return '—'; const i=_rptData.indexOf(r);
+        return `<button class="btn btn-outline btn-sm mr-pbtn" onclick="rptPrint(${i},'mf')">MF Slip</button><button class="btn btn-outline btn-sm mr-pbtn" onclick="rptPrint(${i},'gc')">GC</button><button class="btn btn-outline btn-sm mr-pbtn" onclick="rptPrint(${i},'pv')">Voucher</button><button class="btn btn-success btn-sm mr-pbtn" onclick="rptPrint(${i},'wa')">WhatsApp</button>`; }}
     ],
     payment: [
       {l:'SO No',      f:r=>str(r.SO_Number),   mono:true, amber:true},
@@ -4778,7 +4850,7 @@ function getRptCols() {
       {l:'GC No',       f:r=>str(r.GC_No),       mono:true},
       {l:'Invoice No',  f:r=>str(r.Invoice_No),  mono:true},
       {l:'E-Way Bill',  f:r=>str(r.Eway_Bill),   mono:true},
-      {l:'E-Way Expiry',f:r=>dtp(r.Eway_Expiry)},
+      {l:'E-Way Expiry',f:r=>_rptEway(r), k0:'Eway_Expiry'},
       {l:'Trip Status', f:r=>{
         const s=String(r.Trip_Status||'');
         return s==='RUNNING'?'<span class="badge b-run">Running</span>':s==='COMPLETED'?'<span class="badge b-done">Done</span>':'<span class="badge b-pend">—</span>';
@@ -4793,7 +4865,7 @@ function getRptCols() {
       {l:'GC No',       f:r=>str(r.GC_No),       mono:true},
       {l:'Invoice No',  f:r=>str(r.Invoice_No),  mono:true},
       {l:'E-Way Bill',  f:r=>str(r.Eway_Bill),   mono:true},
-      {l:'E-Way Expiry',f:r=>dtp(r.Eway_Expiry)},
+      {l:'E-Way Expiry',f:r=>_rptEway(r), k0:'Eway_Expiry'},
       {l:'Bilti Freight',f:r=>inr(r.Bilti_Freight),rt:true,money:true,k:'Bilti_Freight'},
       {l:'Extra Chrg',  f:r=>inr(r.Extra_Chrg),  rt:true, money:true, k:'Extra_Chrg'},
       {l:'Total Revenue',f:r=>inr(r.Total_Revenue),rt:true,money:true,k:'Total_Revenue'}
@@ -4838,15 +4910,39 @@ function getRptCols() {
 
 function renderRptTable() {
   const wrap = document.getElementById('rpt-table-wrap'); if (!wrap) return;
+  if (_rptTab === 'broker' || _rptTab === 'party') { renderLedger(); return; }
   const cols = getRptCols();
-  const d    = _rptData;
+  let d = _rptData;
+  if (_rptSort.l) {
+    const sc = cols.find(c => c.l === _rptSort.l);
+    if (sc) {
+      const val = r => {
+        if (sc.l === 'Loading Date') return r.Loading_Date ? String(r.Loading_Date).slice(0,10) : '';
+        if (sc.k) return parseFloat(r[sc.k]) || 0;
+        if (sc.k0) return r[sc.k0] ? String(r[sc.k0]).slice(0,10) : '';
+        const t = String(sc.f(r)).replace(/<[^>]+>/g,'').replace(/[₹,%]|MT/g,'').trim();
+        if (t === '—' || t === '') return '';
+        return (/^-?[\d.]+$/.test(t)) ? parseFloat(t) : t.toLowerCase();
+      };
+      d = d.slice().sort((a,b) => {
+        const x = val(a), y = val(b);
+        if (x === y) return 0;
+        if (x === '') return 1;          // blanks always last
+        if (y === '') return -1;
+        return (x < y ? -1 : 1) * _rptSort.dir;
+      });
+    }
+  }
   if (!d.length) {
     wrap.innerHTML = `<div class="mr-empty"><b>No records found</b>No SOs match the current filters or Loading Date range.</div>`;
     return;
   }
 
   let thead = '<thead><tr>';
-  cols.forEach(c => { thead += `<th${c.rt?' style="text-align:right"':''}>${c.l}</th>`; });
+  cols.forEach((c, i) => {
+    const on = _rptSort.l === c.l, ar = on ? (_rptSort.dir > 0 ? '▲' : '▼') : '⇅';
+    thead += `<th class="srt${on?' on':''}" onclick="sortRpt(${i})" title="Click to sort"${c.rt?' style="text-align:right"':''}>${i===0?'<span class="mr-idx">#</span>':''}${c.l}<span class="ar">${ar}</span></th>`;
+  });
   thead += '</tr></thead>';
 
   // Running totals (rates are not summed)
@@ -4854,7 +4950,7 @@ function renderRptTable() {
   cols.forEach((c,i) => { if (c.money && !c.noTotal) totals[i] = 0; });
 
   let tbody = '<tbody>';
-  d.forEach(r => {
+  d.forEach((r, ri) => {
     tbody += '<tr>';
     cols.forEach((c, i) => {
       if (totals[i] !== undefined && c.k) totals[i] += parseFloat(r[c.k]) || 0;
@@ -4862,7 +4958,7 @@ function renderRptTable() {
       if (c.rt) style += 'text-align:right;';
       if (c.mono) style += 'font-family:var(--mono);font-size:11px;';
       if (c.amber) style += 'color:var(--amber);font-weight:700;';
-      tbody += `<td${style?` style="${style}"`:''}>${c.f(r)}</td>`;
+      tbody += `<td${style?` style="${style}"`:''}>${i===0?`<span class="mr-idx">${ri+1}</span>`:''}${c.f(r)}</td>`;
     });
     tbody += '</tr>';
   });
@@ -5014,11 +5110,106 @@ async function exportRptExcel() {
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Master Report');
+  const sumOf = fn => rows.reduce((a, r) => a + (parseFloat(fn(r)) || 0), 0);
+  const sa = [['SFMPL TMS — Master Report Summary'],
+    ['Loading Date', (_rptFilters.dateFrom || 'Start') + ' to ' + (_rptFilters.dateTo || 'Latest')], ['MF records', rows.length], [],
+    ['Metric', 'Value'], ['Total Qty (MT)', sumOf(r => r.Final_MT)], ['Total Freight', sumOf(r => r.Total_Freight)],
+    ['MF Freight', sumOf(r => r.Freight_MF)], ['Advance', sumOf(r => r.Advance)], ['Balance', sumOf(r => r.Balance)],
+    ['Total Cost', sumOf(r => r.Total_Cost)], ['Bilti Freight', sumOf(r => r.Bilti_Freight)], ['Gross Profit', sumOf(r => r.Has_Profit ? r.Gross_Profit : 0)], [],
+    ['Broker', 'Trips', 'Qty (MT)', 'MF Freight', 'Advance', 'Balance']];
+  const bk = {};
+  rows.forEach(r => { const k = r.Broker_Name || '(No broker)'; const o = bk[k] || (bk[k] = [0,0,0,0,0]);
+    o[0]++; o[1] += n(r.Final_MT); o[2] += n(r.Freight_MF); o[3] += n(r.Advance); o[4] += n(r.Balance); });
+  Object.keys(bk).sort((a,b) => bk[b][0] - bk[a][0]).forEach(k => sa.push([k, ...bk[k]]));
+  const ws2 = XLSX.utils.aoa_to_sheet(sa); ws2['!cols'] = [{wch:26},{wch:16},{wch:12},{wch:14},{wch:14},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Summary');
   const f = _rptFilters || {};
   const tag = (f.dateFrom || f.dateTo) ? ((f.dateFrom || 'start') + '_to_' + (f.dateTo || 'latest')) : _rptYMD(new Date());
   XLSX.writeFile(wb, 'SFMPL_Master_Report_' + tag + '.xlsx');
   toast('Excel downloaded ✓ (' + rows.length + ' MF rows)');
 }
+// ---- Column chooser ----
+const _gc0 = getRptCols;
+let _rptHide = {};
+getRptCols = function() {
+  const h = _rptHide[_rptTab] || [];
+  return _gc0().filter((c, i) => i === 0 || h.indexOf(c.l) < 0);
+};
+function toggleRptCols() {
+  const p = document.getElementById('mr-cols'); if (!p) return;
+  if (_rptTab === 'broker' || _rptTab === 'party') { toast('Column chooser is for the report tabs', 'error'); return; }
+  if (p.style.display === 'flex') { p.style.display = 'none'; return; }
+  const h = _rptHide[_rptTab] || [];
+  p.innerHTML = _gc0().slice(1).map(c => `<label><input type="checkbox" ${h.indexOf(c.l) < 0 ? 'checked' : ''} onchange="setRptCol('${c.l.replace(/'/g, "\\'")}', this.checked)">${c.l}</label>`).join('');
+  p.style.display = 'flex';
+}
+function setRptCol(l, on) {
+  const h = (_rptHide[_rptTab] = (_rptHide[_rptTab] || []).filter(x => x !== l));
+  if (!on) h.push(l);
+  if (_rptSort.l === l && !on) _rptSort = { l: '', dir: 1 };
+  renderRptTable();
+}
+
+// ---- Ledgers (from MF data of the current filters; read-only) ----
+const _sw0 = switchRptTab;
+switchRptTab = function(tab) {
+  if (tab !== 'broker' && tab !== 'party') { _sw0(tab); return; }
+  _rptTab = tab;
+  document.querySelectorAll('[id^="rtab-"]').forEach(t => t.classList.remove('active'));
+  document.getElementById('rtab-' + tab).classList.add('active');
+  const p = document.getElementById('mr-cols'); if (p) p.style.display = 'none';
+  renderLedger();
+};
+async function renderLedger() {
+  const wrap = document.getElementById('rpt-table-wrap'); if (!wrap) return;
+  const tab = _rptTab;
+  wrap.innerHTML = '<div class="loading"><span class="spinner"></span>Building ledger…</div>';
+  let res; try { res = await call('getMasterExcelData', _rptFilters); } catch(e) { res = null; }
+  if (_rptTab !== tab) return;
+  if (!res || !res.success) { wrap.innerHTML = '<div class="loading" style="color:var(--red)">Could not load ledger</div>'; return; }
+  const n = v => parseFloat(v) || 0, inr = v => '₹' + n(v).toLocaleString('en-IN', {maximumFractionDigits: 0});
+  const rows = (res.data || []).filter(r => String(r.MF_No || '').trim());
+  const isB = tab === 'broker', agg = {};
+  rows.forEach(r => {
+    const k = (isB ? r.Broker_Name : r.Bill_Party) || '(Not set)';
+    const o = agg[k] || (agg[k] = { t: 0, mt: 0, a: 0, b: 0, c: 0, g: 0 });
+    o.t++; o.mt += n(r.Final_MT);
+    if (isB) { o.a += n(r.Freight_MF); o.b += n(r.Advance); o.c += n(r.Balance); }
+    else { o.a += n(r.Bilti_Freight); o.b += n(r.Total_Cost); o.c += r.Has_Profit ? n(r.Gross_Profit) : 0; }
+  });
+  const keys = Object.keys(agg).sort((x, y) => agg[y].t - agg[x].t);
+  const cnt = document.getElementById('rpt-count'); if (cnt) cnt.textContent = keys.length + (isB ? ' brokers' : ' parties');
+  if (!keys.length) { wrap.innerHTML = '<div class="mr-empty"><b>No MF records</b>Nothing to build a ledger from in this range.</div>'; return; }
+  const H = isB ? ['Broker', 'Trips', 'Qty (MT)', 'MF Freight', 'Advance Given', 'Balance Due']
+                : ['Party', 'Trips', 'Qty (MT)', 'Bilti Freight', 'Total Cost', 'Gross Profit'];
+  const T = { t: 0, mt: 0, a: 0, b: 0, c: 0 };
+  let body = '';
+  keys.forEach((k, i) => { const o = agg[k]; Object.keys(T).forEach(x => T[x] += o[x]);
+    body += `<tr><td><span class="mr-idx">${i+1}</span><b>${_rptEsc(k)}</b></td><td style="text-align:right">${o.t}</td><td style="text-align:right">${o.mt.toLocaleString('en-IN', {maximumFractionDigits: 2})}</td><td style="text-align:right">${inr(o.a)}</td><td style="text-align:right">${inr(o.b)}</td><td style="text-align:right;font-weight:700;color:${!isB && o.c < 0 ? 'var(--red)' : 'var(--ink)'}">${inr(o.c)}</td></tr>`; });
+  wrap.innerHTML = `<div class="mr-scroll"><table><thead><tr>${H.map((h, i) => `<th${i ? ' style="text-align:right"' : ''}>${h}</th>`).join('')}</tr></thead><tbody>${body}</tbody>
+    <tfoot><tr><td>TOTAL (${keys.length})</td><td style="text-align:right">${T.t}</td><td style="text-align:right">${T.mt.toLocaleString('en-IN', {maximumFractionDigits: 2})}</td><td style="text-align:right">${inr(T.a)}</td><td style="text-align:right">${inr(T.b)}</td><td style="text-align:right">${inr(T.c)}</td></tr></tfoot></table></div>`;
+}
+
+// ---- Print slips + WhatsApp (from the report row; no data written) ----
+function rptPrint(i, type) {
+  const r = _rptData[i]; if (!r) return;
+  const n = v => parseFloat(v) || 0, inr = v => '₹ ' + n(v).toLocaleString('en-IN', {maximumFractionDigits: 0}), dt = v => v ? _rptFmtDate(v) : '—';
+  const S = v => (v === undefined || v === null || v === '') ? '—' : v;
+  if (type === 'wa') {
+    const t = `*SFMPL — MF ${S(r.MF_No)}*\nLorry: ${S(r.Lorry_No)}\nLoading: ${dt(r.Loading_Date)}\nTo: ${S(r.Destination)}\nQty: ${n(r.Final_MT)} MT\nFreight (MF): ${inr(r.Freight_MF)}\nAdvance: ${inr(r.Advance)}\nBalance: ${inr(r.Balance)}`;
+    window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank'); return;
+  }
+  const defs = {
+    mf: ['Motor Freight (MF) Slip', [['MF No', r.MF_No], ['SO No', r.SO_Number], ['Loading Date', dt(r.Loading_Date)], ['Lorry No', r.Lorry_No], ['Consignor', r.Consignor], ['Consignee', r.Consignee], ['Destination', r.Destination], ['Final MT', r.Final_MT], ['PMT Rate', inr(r.PMT_Rate)], ['Total Freight', inr(r.Total_Freight)], ['L/M', inr(r.LM)], ['P/M', inr(r.PM)], ['Freight (MF)', inr(r.Freight_MF)], ['Advance', inr(r.Advance)], ['Diesel', inr(r.Diesel)], ['Balance', inr(r.Balance)]]],
+    gc: ['Goods Consignment (GC) Details', [['GC No', r.GC_No], ['Invoice No', r.Invoice_No], ['E-Way Bill', r.Eway_Bill], ['E-Way Expiry', dt(r.Eway_Expiry)], ['Loading Date', dt(r.Loading_Date)], ['Lorry No', r.Lorry_No], ['Consignor', r.Consignor], ['Consignee', r.Consignee], ['Destination', r.Destination], ['PKGS', r.PKGS], ['Articles', r.Articles], ['Final MT', r.Final_MT]]],
+    pv: ['Payment Voucher', [['MF No', r.MF_No], ['Lorry No', r.Lorry_No], ['Loading Date', dt(r.Loading_Date)], ['Consignee', r.Consignee], ['Freight (MF)', inr(r.Freight_MF)], ['Advance', inr(r.Advance)], ['Diesel', inr(r.Diesel)], ['Balance Payable', inr(r.Balance)]]]
+  };
+  const [title, f] = defs[type];
+  const w = window.open('', '_blank'); if (!w) { toast('Allow pop-ups to print', 'error'); return; }
+  w.document.write(`<html><head><title>${title} ${S(r.MF_No)}</title><style>body{font-family:Arial,sans-serif;margin:30px;color:#111}h2{margin:0}small{color:#555}table{border-collapse:collapse;width:100%;margin-top:14px}td{border:1px solid #999;padding:7px 10px;font-size:13px}td:first-child{width:38%;background:#f2f4f7;font-weight:700}.sg{display:flex;justify-content:space-between;margin-top:70px;font-size:12px}.sg div{border-top:1px solid #111;padding-top:4px;width:30%;text-align:center}@media print{button{display:none}}</style></head><body><h2>SFMPL Transport</h2><small>${title} · Printed ${new Date().toLocaleDateString('en-IN')}</small><table>${f.map(x => `<tr><td>${x[0]}</td><td>${_rptEsc(S(x[1]))}</td></tr>`).join('')}</table><div class="sg"><div>Prepared by</div><div>Checked by</div><div>Receiver / Driver</div></div><script>window.onload=function(){window.print()}<\/script></body></html>`);
+  w.document.close();
+}
+
 
 // =============================================
 // AUTH FUNCTIONS
@@ -5269,6 +5460,19 @@ window.onload = function() {
   }, 150);
 };
 
+</script>
+<script>
+/* mobile collapsible menu (UI only) */
+(function(){
+  var tl=document.querySelector('.topbar-left'); if(!tl||document.getElementById('menu-btn')) return;
+  var b=document.createElement('button'); b.id='menu-btn'; b.type='button'; b.setAttribute('aria-label','Menu'); b.innerHTML='&#9776;';
+  b.onclick=function(e){e.stopPropagation();document.body.classList.toggle('sb-open');};
+  tl.insertBefore(b,tl.firstChild);
+  document.addEventListener('click',function(e){
+    if(!document.body.classList.contains('sb-open')) return;
+    if(e.target.closest('.nav-item')||!e.target.closest('#sidebar')) document.body.classList.remove('sb-open');
+  });
+})();
 </script>
 </body>
 </html>
