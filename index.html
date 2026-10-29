@@ -1460,7 +1460,7 @@ const SB = {
         Lorry_No: td.lorry_no||'', Consignor: td.consignor||'', Consignee: td.consignee||'', Destination: td.destination||'',
         Trip_Status: td.trip_status||'', Loading_Date: td.loading_date||'',
         GC_No: td.gc_no||'', Invoice_No: td.invoice_no||'', Eway_Bill: td.eway_bill_no||'', Eway_Expiry: td.eway_expiry||'',
-        PKGS: td.pkgs||'', Articles: td.articles||0, Final_MT: td.final_mt||0,
+        PKGS: td.pkgs||'', Articles: td.articles||0, Final_MT: td.final_mt||0, MF_Final_MT: mf.final_mt||0,
         MF_No: mf.mf_no||'', PMT_Rate: mf.pmt_rate||0, Total_Freight: mf.total_freight||0,
         LM: mf.l_m||0, PM: mf.p_m||0, Freight_MF: mf.freight_mf||0,
         Advance: mf.advance||0, Diesel: mf.diesel||0, Balance: mf.balance||0,
@@ -5029,6 +5029,8 @@ function exportRptCSV() {
 
 // ---- Excel export — professional styled workbook (ExcelJS) ----
 // Builds the styled MF-format workbook. Kept separate from the download step so it is easy to test / reuse.
+// Qty = Final MT of the MF (the quantity Total Freight is calculated on); falls back to the Dispatch Final MT.
+const _qtyMT = r => (parseFloat(r.MF_Final_MT) || parseFloat(r.Final_MT) || 0);
 function _buildMasterWorkbook(rows, f) {
   f = f || {};
   const n = v => parseFloat(v) || 0;
@@ -5065,7 +5067,7 @@ function _buildMasterWorkbook(rows, f) {
     ['Broker Name',      r => r.Broker_Name,                                   't'],
     ['Loading Point',    r => r.Loading_Point,                                 't'],
     ['Loading Clerk',    r => '',                                              't'],
-    ['Qty',              r => n(r.Final_MT),                                   'n'],
+    ['Qty',              r => n(_qtyMT(r)),                                   'n'],
     ['Pmt',              r => n(r.PMT_Rate),                                   'r'],
     ['Other Charges',    r => n(r.Other_Expense),                              'n'],
     ['Total',            r => n(r.Total_Freight),                              'n'],
@@ -5245,7 +5247,7 @@ function _buildMasterWorkbook(rows, f) {
   });
   const METRICS = [
     ['MF Records', rows.length, '#,##0'],
-    ['Total Qty (MT)', sumOf(r => r.Final_MT), '#,##0.00'],
+    ['Total Qty (MT)', sumOf(_qtyMT), '#,##0.00'],
     ['Total Freight', sumOf(r => r.Total_Freight), '#,##0.00'],
     ['MF Freight', sumOf(r => r.Freight_MF), '#,##0.00'],
     ['Advance Paid', sumOf(r => r.Advance), '#,##0.00'],
@@ -5276,7 +5278,7 @@ function _buildMasterWorkbook(rows, f) {
   });
   const bk = {};
   rows.forEach(r => { const k = r.Broker_Name || '(No broker)'; const o = bk[k] || (bk[k] = [0,0,0,0,0]);
-    o[0]++; o[1] += n(r.Final_MT); o[2] += n(r.Freight_MF); o[3] += n(r.Advance); o[4] += n(r.Balance); });
+    o[0]++; o[1] += n(_qtyMT(r)); o[2] += n(r.Freight_MF); o[3] += n(r.Advance); o[4] += n(r.Balance); });
   const keys = Object.keys(bk).sort((a, b) => bk[b][0] - bk[a][0]);
   const b1 = bStart + 2;
   keys.forEach((k, i) => {
@@ -5358,7 +5360,7 @@ async function _exportRptExcelPlain() {
     ['Broker Name',      r => r.Broker_Name,                                  't'],
     ['Loading Point',    r => r.Loading_Point,                                't'],
     ['loading clek',     r => '',                                             't'],   // not stored in TMS
-    ['Qty',              r => n(r.Final_MT),                                  'n'],
+    ['Qty',              r => n(_qtyMT(r)),                                  'n'],
     ['Pmt',              r => n(r.PMT_Rate),                                  'r'],
     ['Othr Cha',         r => n(r.Other_Expense),                             'n'],
     ['Total',            r => n(r.Total_Freight),                             'n'],   // Qty x Pmt
@@ -5434,13 +5436,13 @@ async function _exportRptExcelPlain() {
   const sumOf = fn => rows.reduce((a, r) => a + (parseFloat(fn(r)) || 0), 0);
   const sa = [['SFMPL TMS — Master Report Summary'],
     ['Loading Date', (_rptFilters.dateFrom || 'Start') + ' to ' + (_rptFilters.dateTo || 'Latest')], ['MF records', rows.length], [],
-    ['Metric', 'Value'], ['Total Qty (MT)', sumOf(r => r.Final_MT)], ['Total Freight', sumOf(r => r.Total_Freight)],
+    ['Metric', 'Value'], ['Total Qty (MT)', sumOf(_qtyMT)], ['Total Freight', sumOf(r => r.Total_Freight)],
     ['MF Freight', sumOf(r => r.Freight_MF)], ['Advance', sumOf(r => r.Advance)], ['Balance', sumOf(r => r.Balance)],
     ['Total Cost', sumOf(r => r.Total_Cost)], ['Bilti Freight', sumOf(r => r.Bilti_Freight)], ['Gross Profit', sumOf(r => r.Has_Profit ? r.Gross_Profit : 0)], [],
     ['Broker', 'Trips', 'Qty (MT)', 'MF Freight', 'Advance', 'Balance']];
   const bk = {};
   rows.forEach(r => { const k = r.Broker_Name || '(No broker)'; const o = bk[k] || (bk[k] = [0,0,0,0,0]);
-    o[0]++; o[1] += n(r.Final_MT); o[2] += n(r.Freight_MF); o[3] += n(r.Advance); o[4] += n(r.Balance); });
+    o[0]++; o[1] += n(_qtyMT(r)); o[2] += n(r.Freight_MF); o[3] += n(r.Advance); o[4] += n(r.Balance); });
   Object.keys(bk).sort((a,b) => bk[b][0] - bk[a][0]).forEach(k => sa.push([k, ...bk[k]]));
   const ws2 = XLSX.utils.aoa_to_sheet(sa); ws2['!cols'] = [{wch:26},{wch:16},{wch:12},{wch:14},{wch:14},{wch:14}];
   XLSX.utils.book_append_sheet(wb, ws2, 'Summary');
@@ -5682,7 +5684,7 @@ function rptPrint(i, type) {
   const dt = v => v ? _rptFmtDate(v) : '—';
   const S = v => (v === undefined || v === null || v === '') ? '—' : String(v);
   if (type === 'wa') {
-    const t = `*SFMPL — MF ${S(r.MF_No)}*\nLorry: ${S(r.Lorry_No)}\nLoading: ${dt(r.Loading_Date)}\nTo: ${S(r.Destination)}\nQty: ${n(r.Final_MT)} MT\nFreight (MF): ${inr(r.Freight_MF)}\nAdvance: ${inr(r.Advance)}\nBalance: ${inr(r.Balance)}`;
+    const t = `*SFMPL — MF ${S(r.MF_No)}*\nLorry: ${S(r.Lorry_No)}\nLoading: ${dt(r.Loading_Date)}\nTo: ${S(r.Destination)}\nQty: ${n(_qtyMT(r))} MT\nFreight (MF): ${inr(r.Freight_MF)}\nAdvance: ${inr(r.Advance)}\nBalance: ${inr(r.Balance)}`;
     window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank'); return;
   }
   const nm = (list, idk, namek, id) => { const x = (list || []).find(o => String(o[idk]) === String(id)); return x ? x[namek] : ''; };
@@ -5697,9 +5699,9 @@ function rptPrint(i, type) {
     const amt = (lbl, v, cls, note) => '<tr class="' + (cls || '') + '"><td>' + lbl + (note ? '<span class="note">' + note + '</span>' : '') + '</td><td>' + (cls === 'less' ? '(–) ' : '') + inr(v) + '</td></tr>';
     html = '<div class="sheet">' + _pfHead('Motor Freight Slip', [['MF No', S(r.MF_No)], ['Date', dt(r.Loading_Date)], ['Printed', today]])
       + _pfSec('Trip Details', _pfKV([['Lorry No', S(r.Lorry_No)], ['SO No', S(r.SO_Number)], ['Broker / Owner', S(broker)], ['Loading Date', dt(r.Loading_Date)],
-          ['From', S(from)], ['Destination', S(r.Destination)], ['Consignor', S(r.Consignor)], ['Consignee', S(r.Consignee)], ['Final Qty (MT)', n(r.Final_MT).toLocaleString('en-IN', { maximumFractionDigits: 3 })], ['PMT Rate', inr(r.PMT_Rate)]]))
+          ['From', S(from)], ['Destination', S(r.Destination)], ['Consignor', S(r.Consignor)], ['Consignee', S(r.Consignee)], ['Final Qty (MT)', n(_qtyMT(r)).toLocaleString('en-IN', { maximumFractionDigits: 3 })], ['PMT Rate', inr(r.PMT_Rate)]]))
       + _pfSec('Freight Computation', '<table class="amt">'
-          + amt('Total Freight', r.Total_Freight, '', n(r.Final_MT) + ' MT × ' + inr(r.PMT_Rate))
+          + amt('Total Freight', r.Total_Freight, '', n(_qtyMT(r)) + ' MT × ' + inr(r.PMT_Rate))
           + (n(r.LM) ? amt('Less: L/M', r.LM, 'less') : '') + (n(r.PM) ? amt('Less: P/M', r.PM, 'less') : '')
           + (n(r.Other_Expense) ? amt('Add: Other Expense', r.Other_Expense) : '')
           + amt('MF Freight', r.Freight_MF, 'sub')
@@ -5758,21 +5760,21 @@ async function rptPrintReport() {
     const gpv = r.Has_Profit ? n(r.Gross_Profit) : null;
     return '<tr><td>' + (i + 1) + '</td><td>' + _rptEsc(_rptFmtDate(r.Loading_Date) || '—') + '</td><td class="mf">' + _rptEsc(r.MF_No) + '</td><td>' + _rptEsc(r.Lorry_No || '') + '</td>'
       + '<td>' + _rptEsc(r.Broker_Name || '') + '</td><td>' + _rptEsc(r.Destination || '') + '</td><td>' + _rptEsc(r.Consignee || '') + '</td>'
-      + '<td class="r">' + n(r.Final_MT).toLocaleString('en-IN', { maximumFractionDigits: 2 }) + '</td><td class="r">' + m2(r.Freight_MF) + '</td><td class="r">' + m2(r.Advance) + '</td>'
+      + '<td class="r">' + n(_qtyMT(r)).toLocaleString('en-IN', { maximumFractionDigits: 2 }) + '</td><td class="r">' + m2(r.Freight_MF) + '</td><td class="r">' + m2(r.Advance) + '</td>'
       + '<td class="r' + (n(r.Balance) > 0 ? ' due' : '') + '">' + m2(r.Balance) + '</td><td class="r">' + m2(r.Bilti_Freight) + '</td>'
       + '<td class="r ' + (gpv === null ? '' : gpv < 0 ? 'neg' : 'pos') + '">' + (gpv === null ? '—' : m2(gpv)) + '</td></tr>';
   }).join('');
   const bk = {};
-  rows.forEach(r => { const k = r.Broker_Name || '(No broker)'; const o = bk[k] || (bk[k] = [0, 0, 0, 0, 0]); o[0]++; o[1] += n(r.Final_MT); o[2] += n(r.Freight_MF); o[3] += n(r.Advance); o[4] += n(r.Balance); });
+  rows.forEach(r => { const k = r.Broker_Name || '(No broker)'; const o = bk[k] || (bk[k] = [0, 0, 0, 0, 0]); o[0]++; o[1] += n(_qtyMT(r)); o[2] += n(r.Freight_MF); o[3] += n(r.Advance); o[4] += n(r.Balance); });
   const bkRows = Object.keys(bk).sort((a, b) => bk[b][0] - bk[a][0]).map(k => '<tr><td class="mf">' + _rptEsc(k) + '</td><td class="r">' + bk[k][0] + '</td><td class="r">' + bk[k][1].toLocaleString('en-IN', { maximumFractionDigits: 2 })
     + '</td><td class="r">' + m2(bk[k][2]) + '</td><td class="r">' + m2(bk[k][3]) + '</td><td class="r' + (bk[k][4] > 0 ? ' due' : '') + '">' + m2(bk[k][4]) + '</td></tr>').join('');
   const html = '<div class="sheet land">' + _pfHead('Master Report', [['Loading Date', period], ['MF Records', String(rows.length)], ['Printed', new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })]])
-    + '<div class="kpis">' + kpi('MF Records', rows.length) + kpi('Total Qty (MT)', sum(r => r.Final_MT).toLocaleString('en-IN', { maximumFractionDigits: 2 })) + kpi('MF Freight', '₹ ' + m0(sum(r => r.Freight_MF)))
+    + '<div class="kpis">' + kpi('MF Records', rows.length) + kpi('Total Qty (MT)', sum(_qtyMT).toLocaleString('en-IN', { maximumFractionDigits: 2 })) + kpi('MF Freight', '₹ ' + m0(sum(r => r.Freight_MF)))
       + kpi('Advance Paid', '₹ ' + m0(sum(r => r.Advance))) + kpi('Balance Due', '₹ ' + m0(sum(r => r.Balance)), 'o') + kpi('Bilti Freight', '₹ ' + m0(sum(r => r.Bilti_Freight)))
       + kpi('Gross Profit', '₹ ' + m0(gp), gp < 0 ? 'r' : 'g') + '</div>'
     + (act ? '<div class="filt">Filters &nbsp;→&nbsp; ' + act + '</div>' : '')
     + '<table class="rep"><thead><tr><th>#</th><th>Loading Date</th><th>MF No</th><th>Truck No</th><th>Broker</th><th>Destination</th><th>Consignee</th><th class="r">Qty (MT)</th><th class="r">MF Freight</th><th class="r">Advance</th><th class="r">Balance</th><th class="r">Bilti Freight</th><th class="r">GP</th></tr></thead>'
-    + '<tbody>' + body + '</tbody><tfoot><tr><td colspan="7">GRAND TOTAL (' + rows.length + ' MF)</td><td class="r">' + sum(r => r.Final_MT).toLocaleString('en-IN', { maximumFractionDigits: 2 }) + '</td><td class="r">' + m2(sum(r => r.Freight_MF)) + '</td><td class="r">' + m2(sum(r => r.Advance))
+    + '<tbody>' + body + '</tbody><tfoot><tr><td colspan="7">GRAND TOTAL (' + rows.length + ' MF)</td><td class="r">' + sum(_qtyMT).toLocaleString('en-IN', { maximumFractionDigits: 2 }) + '</td><td class="r">' + m2(sum(r => r.Freight_MF)) + '</td><td class="r">' + m2(sum(r => r.Advance))
       + '</td><td class="r">' + m2(sum(r => r.Balance)) + '</td><td class="r">' + m2(sum(r => r.Bilti_Freight)) + '</td><td class="r">' + m2(gp) + '</td></tr></tfoot></table>'
     + '<h3 class="sub">Broker-wise Summary</h3><table class="rep" style="width:68%"><thead><tr><th>Broker</th><th class="r">Trips</th><th class="r">Qty (MT)</th><th class="r">MF Freight</th><th class="r">Advance</th><th class="r">Balance</th></tr></thead><tbody>' + bkRows + '</tbody></table>'
     + '<div class="ft"><span>SFMPL TMS — Master Report · computer generated</span><span>Printed by ' + _rptEsc((auth.user && (auth.user.display_name || auth.user.username)) || '') + ' · '
