@@ -671,6 +671,62 @@ table tfoot td { padding: 7px 10px; color: #fff; font-size: 11px; font-weight: 7
   thead tr { background: #222 !important; -webkit-print-color-adjust: exact; }
   tfoot tr { background: #222 !important; -webkit-print-color-adjust: exact; }
 }
+
+/* ============ MASTER REPORT — refined UI (scoped) ============ */
+.mr-filters{background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:12px;box-shadow:0 1px 2px rgba(16,24,40,.04);overflow:hidden}
+.mr-filters-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 14px;background:linear-gradient(180deg,#fbfcfd,#f6f8fa);border-bottom:1px solid var(--divider)}
+.mr-filters-head h3{margin:0;font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--ink2);display:flex;align-items:center;gap:8px}
+.mr-filters-head h3 i{font-style:normal;display:inline-flex;width:20px;height:20px;border-radius:5px;background:var(--blue-lt);color:var(--blue);align-items:center;justify-content:center;font-size:11px}
+.mr-actions{display:flex;gap:6px;flex-wrap:wrap}
+.mr-body{padding:14px}
+.mr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px 12px}
+.mr-date-row{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px dashed var(--border)}
+.mr-date-box{display:flex;align-items:flex-end;gap:8px;padding:8px 10px;background:var(--blue-lt);border:1px solid #b6d4fb;border-radius:8px}
+.mr-date-box .form-group{min-width:140px}
+.mr-date-box label{color:var(--blue-dk)}
+.mr-date-sep{padding-bottom:9px;color:var(--blue-dk);font-weight:700}
+.mr-date-tag{display:block;font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--blue-dk);margin-bottom:4px}
+.mr-chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.mr-chip{border:1px solid var(--border);background:var(--surface);color:var(--ink3);font-size:11px;font-weight:600;padding:5px 11px;border-radius:999px;cursor:pointer;transition:all .15s;font-family:inherit}
+.mr-chip:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+.mr-chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.mr-active{display:none;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 14px;border-top:1px solid var(--divider);background:#fcfdfe;font-size:11px;color:var(--ink3)}
+.mr-active.show{display:flex}
+.mr-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;background:var(--canvas);border:1px solid var(--border);font-weight:600;color:var(--ink2)}
+.mr-tag b{color:var(--blue-dk);font-weight:700}
+
+.mr-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.mr-stat{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--blue);border-radius:8px;padding:11px 13px;box-shadow:0 1px 2px rgba(16,24,40,.04);transition:transform .15s,box-shadow .15s}
+.mr-stat:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(16,24,40,.08)}
+.mr-stat-lbl{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--ink4)}
+.mr-stat-val{font-size:18px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums;line-height:1.2}
+.mr-stat-sub{font-size:10.5px;color:var(--ink4);margin-top:2px}
+
+.mr-panel{background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 1px 2px rgba(16,24,40,.04);overflow:hidden}
+.mr-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:8px 12px 0;border-bottom:1px solid var(--divider);background:#fbfcfd}
+.mr-tabs{display:flex;gap:2px;flex-wrap:wrap}
+.mr-tab{border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:600;color:var(--ink3);padding:9px 14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,background .15s;border-radius:6px 6px 0 0}
+.mr-tab:hover{color:var(--ink);background:var(--canvas)}
+.mr-tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:700;background:var(--surface)}
+.mr-count{font-size:11px;font-weight:700;color:var(--blue-dk);background:var(--blue-lt);border:1px solid #b6d4fb;padding:3px 10px;border-radius:999px;margin-bottom:6px}
+.mr-scroll{max-height:calc(100vh - 360px);min-height:240px;overflow:auto}
+.mr-scroll table{border-collapse:separate;border-spacing:0;font-size:12px;width:100%}
+.mr-scroll thead th{position:sticky;top:0;z-index:3;background:var(--sb-bg);white-space:nowrap;border-bottom:2px solid var(--sb-accent)}
+.mr-scroll tbody td{white-space:nowrap;border-bottom:1px solid var(--divider);padding:8px 10px}
+.mr-scroll tbody tr:nth-child(even) td{background:#fafbfc}
+.mr-scroll tbody tr:hover td{background:var(--blue-lt)}
+.mr-scroll tbody td:first-child,.mr-scroll thead th:first-child,.mr-scroll tfoot td:first-child{position:sticky;left:0}
+.mr-scroll tbody td:first-child{z-index:1;background:var(--surface);box-shadow:1px 0 0 var(--border)}
+.mr-scroll tbody tr:nth-child(even) td:first-child{background:#fafbfc}
+.mr-scroll tbody tr:hover td:first-child{background:var(--blue-lt)}
+.mr-scroll thead th:first-child{z-index:5}
+.mr-scroll tfoot td{position:sticky;bottom:0;z-index:3;background:var(--sb-bg);color:#fff;padding:9px 10px;font-size:11.5px;font-weight:700;white-space:nowrap;border-top:2px solid var(--sb-accent)}
+.mr-scroll tfoot td:first-child{z-index:5}
+.mr-date{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--blue-dk);background:var(--blue-lt);border:1px solid #b6d4fb;padding:1px 7px;border-radius:5px}
+.mr-empty{text-align:center;padding:44px 16px;color:var(--ink4)}
+.mr-empty b{display:block;font-size:14px;color:var(--ink3);margin-bottom:4px}
+@media (max-width:760px){.mr-date-box{width:100%}.mr-scroll{max-height:none}}
+@media print{.mr-filters,.mr-chips,.mr-active{display:none!important}.mr-scroll{max-height:none;overflow:visible}.mr-scroll thead th,.mr-scroll tfoot td{position:static}.mr-scroll tbody td:first-child{position:static;box-shadow:none}.mr-panel,.mr-stat{box-shadow:none}}
 </style>
 </head>
 <body>
@@ -1277,6 +1333,8 @@ const SB = {
         Total_Exp: mf.total_exp||0, Total_Cost: mf.total_cost||0, Bill_Pmt: mf.bill_pmt||0, Bilti_Freight: mf.bilti_freight||0,
         Extra_Chrg: pf.extra_chrg||0, Total_Revenue: pf.total_revenue||0, Gross_Profit: pf.gross_profit||0,
         GP_on_Sale: pf.gp_on_sale||0, GP_on_Purchase: pf.gp_on_purchase||0,
+        Broker_ID: td.broker_id||'', Items: td.items||'', Other_Expense: mf.other_expense||0, Xerox: mf.xerox||0, Con: mf.con||0,
+        Detention: mf.detention||0, Extra_Point: mf.extra_point||0, Extra_Labour: mf.extra_labour||0, Has_Profit: !!pf.id,
         Allocated: so.allocated||false, Documentation_Status: so.documentation_status||false,
         MF_Status: so.mf_status||false, Unloading_Status: so.unloading_status||false, Profit_Status: so.profit_status||false
       };
@@ -1288,6 +1346,20 @@ const SB = {
     if(f.destination) rows = rows.filter(r => String(r.Destination||'').toLowerCase().includes(f.destination.toLowerCase()));
     if(f.mfNo)        rows = rows.filter(r => String(r.MF_No||'').toLowerCase().includes(f.mfNo.toLowerCase()));
     if(f.converted)   rows = rows.filter(r => String(r.Converted||'').toUpperCase() === f.converted.toUpperCase());
+    // Loading Date range filter (inclusive). Rows without a loading date are excluded when a range is set.
+    let dFrom = f.dateFrom || '', dTo = f.dateTo || '';
+    if (dFrom && dTo && dFrom > dTo) { const t = dFrom; dFrom = dTo; dTo = t; }
+    if (dFrom) rows = rows.filter(r => r.Loading_Date && String(r.Loading_Date).slice(0,10) >= dFrom);
+    if (dTo)   rows = rows.filter(r => r.Loading_Date && String(r.Loading_Date).slice(0,10) <= dTo);
+    // Newest loading date first; SOs with no loading date go last
+    rows.sort((a,b) => {
+      const x = a.Loading_Date ? String(a.Loading_Date).slice(0,10) : '';
+      const y = b.Loading_Date ? String(b.Loading_Date).slice(0,10) : '';
+      if (x === y) return 0;
+      if (!x) return 1;
+      if (!y) return -1;
+      return x < y ? 1 : -1;
+    });
     return { success: true, data: rows, total: rows.length };
   },
   async getReportFilterOptions() {
@@ -1295,6 +1367,30 @@ const SB = {
     const consignees = [...new Set(tdRows.map(r => r.consignee).filter(Boolean))].sort();
     const destinations = [...new Set(tdRows.map(r => r.destination).filter(Boolean))].sort();
     return { consignees, destinations };
+  },
+
+  // ── MASTER REPORT → EXCEL (adds broker / place / party names + unloading date) ──
+  async getMasterExcelData(filters) {
+    const base = await this.getMasterReport(filters);
+    const [brokers, places, parties, unl] = await Promise.all([
+      sb('broker_master',    'GET', null, '?select=id,broker_name'),
+      sb('place_master',     'GET', null, '?select=id,place_name'),
+      sb('party_master',     'GET', null, '?select=id,party_name'),
+      sb('unloading_master', 'GET', null, '?select=so_id,unloading_date')
+    ]);
+    const bMap={}, plMap={}, ptMap={}, uMap={};
+    brokers.forEach(r => bMap[String(r.id)]  = r.broker_name);
+    places.forEach(r  => plMap[String(r.id)] = r.place_name);
+    parties.forEach(r => ptMap[String(r.id)] = r.party_name);
+    unl.forEach(r     => { if (r.unloading_date) uMap[String(r.so_id)] = r.unloading_date; });
+    base.data = base.data.map(r => ({
+      ...r,
+      Broker_Name:    bMap[String(r.Broker_ID)]  || '',
+      Loading_Point:  plMap[String(r.From_ID)]   || '',
+      Bill_Party:     ptMap[String(r.Party_ID)]  || '',
+      Unloading_Date: uMap[String(r.SO_ID)]      || ''
+    }));
+    return base;
   },
 
   // ── IMPORT ──
@@ -4265,11 +4361,21 @@ async function previewReportSummary() {
 }
 
 // =============================================
-// MASTER REPORT
+// MASTER REPORT  (filters work on LOADING DATE)
 // =============================================
 let _rptData    = [];
 let _rptFilters = {};
 let _rptTab     = 'freight';
+
+const _rptEsc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const _rptYMD = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+const _rptMon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function _rptFmtDate(v) {
+  if (!v) return '';
+  const m = String(v).slice(0,10).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return String(v);
+  return m[3] + ' ' + _rptMon[parseInt(m[2],10)-1] + ' ' + m[1];
+}
 
 async function renderReport() {
   showLoading();
@@ -4280,85 +4386,166 @@ async function renderReport() {
   } catch(e) {}
 
   const cOpts = ['<option value="">All Consignees</option>',
-    ...filterOpts.consignees.map(c => `<option value="${c}">${c}</option>`)].join('');
+    ...filterOpts.consignees.map(c => `<option value="${_rptEsc(c)}">${_rptEsc(c)}</option>`)].join('');
   const dOpts = ['<option value="">All Destinations</option>',
-    ...filterOpts.destinations.map(d => `<option value="${d}">${d}</option>`)].join('');
+    ...filterOpts.destinations.map(d => `<option value="${_rptEsc(d)}">${_rptEsc(d)}</option>`)].join('');
   const cvOpts = `<option value="">All Status</option>
     <option value="YES">Converted</option>
     <option value="PENDING">Pending</option>
     <option value="NO">Not Converted</option>`;
 
   setContent(`
-    <!-- FILTER BAR -->
-    <div class="section-card" style="margin-bottom:12px">
-      <div class="section-title">
-        <span>Filters</span>
-        <div style="display:flex;gap:6px">
+    <!-- FILTERS -->
+    <div class="mr-filters" onkeydown="if(event.key==='Enter'&&event.target.tagName!=='BUTTON'){applyRptFilters()}">
+      <div class="mr-filters-head">
+        <h3><i>⚲</i>Report Filters</h3>
+        <div class="mr-actions">
           <button class="btn btn-primary btn-sm" onclick="applyRptFilters()">▶ Run Report</button>
           <button class="btn btn-outline btn-sm" onclick="resetRptFilters()">↺ Reset</button>
+          <button class="btn btn-success btn-sm" onclick="exportRptExcel()">↓ Excel (MF Format)</button>
           <button class="btn btn-outline btn-sm" onclick="exportRptCSV()">↓ CSV</button>
           <button class="btn btn-outline btn-sm" onclick="window.print()">⎙ Print</button>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr) repeat(2,160px);gap:10px;align-items:end">
-        <div class="form-group">
-          <label>SO Number</label>
-          <input type="text" id="rf-so" placeholder="e.g. SFMPL/0268/001">
+      <div class="mr-body">
+        <div class="mr-grid">
+          <div class="form-group">
+            <label>SO Number</label>
+            <input type="text" id="rf-so" placeholder="e.g. SFMPL/0268/001">
+          </div>
+          <div class="form-group">
+            <label>Lorry No</label>
+            <input type="text" id="rf-lorry" placeholder="e.g. KA01AB1234" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+          </div>
+          <div class="form-group">
+            <label>Consignee</label>
+            <select id="rf-consignee">${cOpts}</select>
+          </div>
+          <div class="form-group">
+            <label>Destination</label>
+            <select id="rf-dest">${dOpts}</select>
+          </div>
+          <div class="form-group">
+            <label>MF No</label>
+            <input type="text" id="rf-mf" placeholder="MF No.">
+          </div>
+          <div class="form-group">
+            <label>Converted</label>
+            <select id="rf-converted">${cvOpts}</select>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Lorry No</label>
-          <input type="text" id="rf-lorry" placeholder="e.g. KA01AB1234" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
-        </div>
-        <div class="form-group">
-          <label>Consignee</label>
-          <select id="rf-consignee">${cOpts}</select>
-        </div>
-        <div class="form-group">
-          <label>Destination</label>
-          <select id="rf-dest">${dOpts}</select>
-        </div>
-        <div class="form-group">
-          <label>MF No</label>
-          <input type="text" id="rf-mf" placeholder="MF No.">
-        </div>
-        <div class="form-group">
-          <label>Converted</label>
-          <select id="rf-converted">${cvOpts}</select>
-        </div>
-        <div class="form-group">
-          <label>Date From</label>
-          <input type="date" id="rf-date-from">
-        </div>
-        <div class="form-group">
-          <label>Date To</label>
-          <input type="date" id="rf-date-to">
+
+        <div class="mr-date-row">
+          <div class="mr-date-box">
+            <div class="form-group">
+              <label>Loading Date From</label>
+              <input type="date" id="rf-date-from" onchange="rptDateChanged()">
+            </div>
+            <span class="mr-date-sep">→</span>
+            <div class="form-group">
+              <label>Loading Date To</label>
+              <input type="date" id="rf-date-to" onchange="rptDateChanged()">
+            </div>
+          </div>
+          <div>
+            <span class="mr-date-tag">Quick Range (Loading Date)</span>
+            <div class="mr-chips" id="rpt-chips">
+              <button class="mr-chip" data-r="today"     onclick="setRptRange('today')">Today</button>
+              <button class="mr-chip" data-r="yesterday" onclick="setRptRange('yesterday')">Yesterday</button>
+              <button class="mr-chip" data-r="7d"        onclick="setRptRange('7d')">Last 7 Days</button>
+              <button class="mr-chip" data-r="month"     onclick="setRptRange('month')">This Month</button>
+              <button class="mr-chip" data-r="lastmonth" onclick="setRptRange('lastmonth')">Last Month</button>
+              <button class="mr-chip" data-r="fy"        onclick="setRptRange('fy')">This FY</button>
+              <button class="mr-chip" data-r="all"       onclick="setRptRange('all')">All Dates</button>
+            </div>
+          </div>
         </div>
       </div>
+      <div class="mr-active" id="rpt-active"></div>
     </div>
 
     <!-- SUMMARY CARDS -->
-    <div id="rpt-summary-cards" style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:12px"></div>
+    <div class="mr-stats" id="rpt-summary-cards"></div>
 
     <!-- TABS + TABLE -->
-    <div class="section-card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div class="tabs" style="margin-bottom:0;border-bottom:none;gap:2px">
-          <button class="tab active" id="rtab-freight"   onclick="switchRptTab('freight')">Freight & MF</button>
-          <button class="tab"        id="rtab-payment"   onclick="switchRptTab('payment')">Payment</button>
-          <button class="tab"        id="rtab-lorry"     onclick="switchRptTab('lorry')">Lorry / Dispatch</button>
-          <button class="tab"        id="rtab-invoice"   onclick="switchRptTab('invoice')">Invoice</button>
-          <button class="tab"        id="rtab-profit"    onclick="switchRptTab('profit')">Profit</button>
-          <button class="tab"        id="rtab-status"    onclick="switchRptTab('status')">SO Status</button>
+    <div class="mr-panel">
+      <div class="mr-panel-head">
+        <div class="mr-tabs">
+          <button class="mr-tab tab active" id="rtab-freight" onclick="switchRptTab('freight')">Freight &amp; MF</button>
+          <button class="mr-tab tab"        id="rtab-payment" onclick="switchRptTab('payment')">Payment</button>
+          <button class="mr-tab tab"        id="rtab-lorry"   onclick="switchRptTab('lorry')">Lorry / Dispatch</button>
+          <button class="mr-tab tab"        id="rtab-invoice" onclick="switchRptTab('invoice')">Invoice</button>
+          <button class="mr-tab tab"        id="rtab-profit"  onclick="switchRptTab('profit')">Profit</button>
+          <button class="mr-tab tab"        id="rtab-status"  onclick="switchRptTab('status')">SO Status</button>
         </div>
-        <span id="rpt-count" style="font-size:11px;font-weight:700;color:var(--ink4)"></span>
+        <span class="mr-count" id="rpt-count">0 records</span>
       </div>
-      <div style="border-top:1px solid var(--divider);padding-top:12px">
-        <div id="rpt-table-wrap"></div>
-      </div>
+      <div id="rpt-table-wrap"></div>
     </div>
   `);
 
+  _rptTab = 'freight';
   await applyRptFilters();
+}
+
+// ---- Quick date ranges (on Loading Date) ----
+function setRptRange(key) {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  let from = '', to = '';
+  if (key === 'today')          { from = to = _rptYMD(now); }
+  else if (key === 'yesterday') { const d = new Date(y, m, now.getDate()-1); from = to = _rptYMD(d); }
+  else if (key === '7d')        { from = _rptYMD(new Date(y, m, now.getDate()-6)); to = _rptYMD(now); }
+  else if (key === 'month')     { from = _rptYMD(new Date(y, m, 1)); to = _rptYMD(new Date(y, m+1, 0)); }
+  else if (key === 'lastmonth') { from = _rptYMD(new Date(y, m-1, 1)); to = _rptYMD(new Date(y, m, 0)); }
+  else if (key === 'fy')        { const fy = m >= 3 ? y : y-1; from = fy + '-04-01'; to = (fy+1) + '-03-31'; }
+  const f = document.getElementById('rf-date-from'), t = document.getElementById('rf-date-to');
+  if (f) f.value = from;
+  if (t) t.value = to;
+  applyRptFilters();
+}
+
+function rptDateChanged() {
+  _rptMarkChip();
+  applyRptFilters();
+}
+
+function _rptMarkChip() {
+  const f = (document.getElementById('rf-date-from')||{}).value || '';
+  const t = (document.getElementById('rf-date-to')||{}).value   || '';
+  const now = new Date(), y = now.getFullYear(), m = now.getMonth();
+  const fyY = m >= 3 ? y : y-1;
+  const ranges = {
+    today:     [_rptYMD(now), _rptYMD(now)],
+    yesterday: [_rptYMD(new Date(y,m,now.getDate()-1)), _rptYMD(new Date(y,m,now.getDate()-1))],
+    '7d':      [_rptYMD(new Date(y,m,now.getDate()-6)), _rptYMD(now)],
+    month:     [_rptYMD(new Date(y,m,1)), _rptYMD(new Date(y,m+1,0))],
+    lastmonth: [_rptYMD(new Date(y,m-1,1)), _rptYMD(new Date(y,m,0))],
+    fy:        [fyY+'-04-01', (fyY+1)+'-03-31'],
+    all:       ['','']
+  };
+  document.querySelectorAll('#rpt-chips .mr-chip').forEach(c => {
+    const r = ranges[c.dataset.r];
+    c.classList.toggle('on', !!r && r[0] === f && r[1] === t);
+  });
+}
+
+function _rptRenderActive() {
+  const el = document.getElementById('rpt-active'); if (!el) return;
+  const f = _rptFilters, tags = [];
+  if (f.soNumber)    tags.push(`SO: <b>${_rptEsc(f.soNumber)}</b>`);
+  if (f.lorryNo)     tags.push(`Lorry: <b>${_rptEsc(f.lorryNo)}</b>`);
+  if (f.consignee)   tags.push(`Consignee: <b>${_rptEsc(f.consignee)}</b>`);
+  if (f.destination) tags.push(`Destination: <b>${_rptEsc(f.destination)}</b>`);
+  if (f.mfNo)        tags.push(`MF: <b>${_rptEsc(f.mfNo)}</b>`);
+  if (f.converted)   tags.push(`Converted: <b>${_rptEsc(f.converted)}</b>`);
+  if (f.dateFrom || f.dateTo) {
+    tags.push(`Loading Date: <b>${f.dateFrom ? _rptFmtDate(f.dateFrom) : 'Start'} → ${f.dateTo ? _rptFmtDate(f.dateTo) : 'Latest'}</b>`);
+  }
+  if (!tags.length) { el.classList.remove('show'); el.innerHTML = ''; return; }
+  el.classList.add('show');
+  el.innerHTML = '<span style="font-weight:700;color:var(--ink4);text-transform:uppercase;letter-spacing:.5px;font-size:10px">Active:</span>' +
+    tags.map(t => `<span class="mr-tag">${t}</span>`).join('');
 }
 
 async function applyRptFilters() {
@@ -4369,9 +4556,11 @@ async function applyRptFilters() {
     destination: (document.getElementById('rf-dest')       ||{}).value || '',
     mfNo:        (document.getElementById('rf-mf')         ||{}).value || '',
     converted:   (document.getElementById('rf-converted')  ||{}).value || '',
-    dateFrom:    (document.getElementById('rf-date-from')  ||{}).value || '',
-    dateTo:      (document.getElementById('rf-date-to')    ||{}).value || ''
+    dateFrom:    (document.getElementById('rf-date-from')  ||{}).value || '',   // Loading Date From
+    dateTo:      (document.getElementById('rf-date-to')    ||{}).value || ''    // Loading Date To
   };
+  _rptMarkChip();
+  _rptRenderActive();
   const wrap = document.getElementById('rpt-table-wrap');
   if (wrap) wrap.innerHTML = '<div class="loading"><span class="spinner"></span>Loading report…</div>';
 
@@ -4382,7 +4571,7 @@ async function applyRptFilters() {
     renderRptSummary();
     renderRptTable();
     const cnt = document.getElementById('rpt-count');
-    if (cnt) cnt.textContent = _rptData.length + ' records';
+    if (cnt) cnt.textContent = _rptData.length + (_rptData.length === 1 ? ' record' : ' records');
   } catch(e) {
     if (wrap) wrap.innerHTML = `<div class="loading" style="color:var(--red)">Error: ${e}</div>`;
   }
@@ -4400,7 +4589,7 @@ function resetRptFilters() {
 
 function switchRptTab(tab) {
   _rptTab = tab;
-  document.querySelectorAll('.tab[id^="rtab-"]').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('[id^="rtab-"]').forEach(t => t.classList.remove('active'));
   const tb = document.getElementById('rtab-' + tab);
   if (tb) tb.classList.add('active');
   renderRptTable();
@@ -4411,19 +4600,24 @@ function renderRptSummary() {
   const d = _rptData;
   const rn = v => parseFloat(v) || 0;
   const inr = v => '₹' + rn(v).toLocaleString('en-IN', {maximumFractionDigits:0});
+  const sum = k => d.reduce((s,r) => s + rn(r[k]), 0);
+  const trips = d.filter(r => String(r.Lorry_No||'').trim()).length;
+  const finalMT = sum('Final_MT');
+  const gp = sum('Gross_Profit');
   const cards = [
-    { val: d.length,                                         lbl: 'Total SOs',        col: 'var(--blue)' },
-    { val: d.filter(r=>String(r.Lorry_No||'').trim()).length,lbl: 'Trips Allocated',   col: 'var(--ink2)' },
-    { val: d.reduce((s,r)=>s+rn(r.Final_MT),0).toFixed(1)+' MT', lbl: 'Total Final MT', col: 'var(--ink2)' },
-    { val: inr(d.reduce((s,r)=>s+rn(r.Total_Freight),0)),   lbl: 'Total Freight',     col: 'var(--blue)' },
-    { val: inr(d.reduce((s,r)=>s+rn(r.Bilti_Freight),0)),   lbl: 'Bilti Freight',     col: 'var(--ink2)' },
-    { val: inr(d.reduce((s,r)=>s+rn(r.Total_Cost),0)),      lbl: 'Total Cost',        col: 'var(--red)' },
-    { val: inr(d.reduce((s,r)=>s+rn(r.Gross_Profit),0)),    lbl: 'Gross Profit',      col: 'var(--green)' }
+    { val: d.length,                       lbl: 'Total SOs',       col: 'var(--blue)',  sub: 'in selected range' },
+    { val: trips,                          lbl: 'Trips Allocated', col: 'var(--ink2)',  sub: d.length ? Math.round(trips/d.length*100) + '% of SOs' : '—' },
+    { val: finalMT.toLocaleString('en-IN',{maximumFractionDigits:1}) + ' MT', lbl: 'Total Final MT', col: 'var(--ink2)', sub: trips ? (finalMT/trips).toFixed(1) + ' MT / trip' : '—' },
+    { val: inr(sum('Total_Freight')),      lbl: 'Total Freight',   col: 'var(--blue)',  sub: finalMT ? inr(sum('Total_Freight')/finalMT) + ' / MT' : '—' },
+    { val: inr(sum('Bilti_Freight')),      lbl: 'Bilti Freight',   col: 'var(--ink2)',  sub: 'billed' },
+    { val: inr(sum('Total_Cost')),         lbl: 'Total Cost',      col: 'var(--red)',   sub: 'incl. expenses' },
+    { val: inr(gp),                        lbl: 'Gross Profit',    col: gp >= 0 ? 'var(--green)' : 'var(--red)', sub: finalMT ? inr(gp/finalMT) + ' / MT' : '—' }
   ];
   el.innerHTML = cards.map(c =>
-    `<div class="stat-card" style="padding:10px 12px;border-top-color:${c.col}">
-      <div class="stat-label">${c.lbl}</div>
-      <div class="stat-value" style="font-size:16px;color:${c.col}">${c.val}</div>
+    `<div class="mr-stat" style="border-top-color:${c.col}">
+      <div class="mr-stat-lbl">${c.lbl}</div>
+      <div class="mr-stat-val" style="color:${c.col}">${c.val}</div>
+      <div class="mr-stat-sub">${c.sub}</div>
     </div>`
   ).join('');
 }
@@ -4432,43 +4626,48 @@ function getRptCols() {
   const inr = v => v !== '' && v !== null && v !== undefined && v !== 0
     ? '₹' + (parseFloat(v)||0).toLocaleString('en-IN',{maximumFractionDigits:0}) : '—';
   const num = v => parseFloat(v) ? parseFloat(v).toLocaleString('en-IN',{maximumFractionDigits:3}) : '—';
-  const str = v => v || '—';
+  const str = v => v ? _rptEsc(v) : '—';
   const pct = v => v ? v + '%' : '—';
+  const dt  = v => v ? `<span class="mr-date">${_rptFmtDate(v)}</span>` : '—';
+  const dtp = v => v ? _rptFmtDate(v) : '—';
+  const ldate = {l:'Loading Date', f:r=>dt(r.Loading_Date)};
 
   const defs = {
     freight: [
       {l:'SO No',      f:r=>str(r.SO_Number),   mono:true, amber:true},
-      {l:'Date',       f:r=>str(r.Created_Date)},
+      ldate,
       {l:'Lorry No',   f:r=>str(r.Lorry_No),    mono:true},
       {l:'Consignor',  f:r=>str(r.Consignor)},
       {l:'Consignee',  f:r=>str(r.Consignee)},
       {l:'Destination',f:r=>str(r.Destination)},
       {l:'MT (SO)',    f:r=>num(r.MT),           rt:true},
       {l:'Final MT',   f:r=>num(r.Final_MT),     rt:true},
-      {l:'PMT Rate',   f:r=>inr(r.PMT_Rate),     rt:true, money:true},
-      {l:'Total Freight',f:r=>inr(r.Total_Freight),rt:true,money:true},
-      {l:'L/M',        f:r=>inr(r.LM),           rt:true, money:true},
-      {l:'P/M',        f:r=>inr(r.PM),           rt:true, money:true},
-      {l:'Freight MF', f:r=>inr(r.Freight_MF),   rt:true, money:true},
+      {l:'PMT Rate',   f:r=>inr(r.PMT_Rate),     rt:true, money:true, k:'PMT_Rate', noTotal:true},
+      {l:'Total Freight',f:r=>inr(r.Total_Freight),rt:true,money:true,k:'Total_Freight'},
+      {l:'L/M',        f:r=>inr(r.LM),           rt:true, money:true, k:'LM'},
+      {l:'P/M',        f:r=>inr(r.PM),           rt:true, money:true, k:'PM'},
+      {l:'Freight MF', f:r=>inr(r.Freight_MF),   rt:true, money:true, k:'Freight_MF'},
       {l:'MF No',      f:r=>str(r.MF_No),        mono:true}
     ],
     payment: [
       {l:'SO No',      f:r=>str(r.SO_Number),   mono:true, amber:true},
+      ldate,
       {l:'MF No',      f:r=>str(r.MF_No),       mono:true},
       {l:'Lorry No',   f:r=>str(r.Lorry_No),    mono:true},
       {l:'Consignee',  f:r=>str(r.Consignee)},
-      {l:'Advance',    f:r=>inr(r.Advance),      rt:true, money:true},
-      {l:'Diesel',     f:r=>inr(r.Diesel),       rt:true, money:true},
-      {l:'Balance',    f:r=>inr(r.Balance),      rt:true, money:true},
-      {l:'Load Labour',f:r=>inr(r.Loading_Labour),rt:true,money:true},
-      {l:'Fooding',    f:r=>inr(r.Fooding),      rt:true, money:true},
-      {l:'Unload Exp', f:r=>inr(r.Unloading_Exp),rt:true,money:true},
-      {l:'Total Exp',  f:r=>inr(r.Total_Exp),    rt:true, money:true},
-      {l:'Total Cost', f:r=>inr(r.Total_Cost),   rt:true, money:true},
-      {l:'Bill PMT',   f:r=>inr(r.Bill_Pmt),     rt:true, money:true}
+      {l:'Advance',    f:r=>inr(r.Advance),      rt:true, money:true, k:'Advance'},
+      {l:'Diesel',     f:r=>inr(r.Diesel),       rt:true, money:true, k:'Diesel'},
+      {l:'Balance',    f:r=>inr(r.Balance),      rt:true, money:true, k:'Balance'},
+      {l:'Load Labour',f:r=>inr(r.Loading_Labour),rt:true,money:true, k:'Loading_Labour'},
+      {l:'Fooding',    f:r=>inr(r.Fooding),      rt:true, money:true, k:'Fooding'},
+      {l:'Unload Exp', f:r=>inr(r.Unloading_Exp),rt:true,money:true,  k:'Unloading_Exp'},
+      {l:'Total Exp',  f:r=>inr(r.Total_Exp),    rt:true, money:true, k:'Total_Exp'},
+      {l:'Total Cost', f:r=>inr(r.Total_Cost),   rt:true, money:true, k:'Total_Cost'},
+      {l:'Bill PMT',   f:r=>inr(r.Bill_Pmt),     rt:true, money:true, k:'Bill_Pmt', noTotal:true}
     ],
     lorry: [
       {l:'SO No',       f:r=>str(r.SO_Number),   mono:true, amber:true},
+      ldate,
       {l:'Lorry No',    f:r=>str(r.Lorry_No),    mono:true},
       {l:'Consignor',   f:r=>str(r.Consignor)},
       {l:'Consignee',   f:r=>str(r.Consignee)},
@@ -4476,11 +4675,10 @@ function getRptCols() {
       {l:'PKGS',        f:r=>str(r.PKGS)},
       {l:'Articles',    f:r=>num(r.Articles),    rt:true},
       {l:'Final MT',    f:r=>num(r.Final_MT),    rt:true},
-      {l:'Loading Date',f:r=>str(r.Loading_Date)},
       {l:'GC No',       f:r=>str(r.GC_No),       mono:true},
       {l:'Invoice No',  f:r=>str(r.Invoice_No),  mono:true},
       {l:'E-Way Bill',  f:r=>str(r.Eway_Bill),   mono:true},
-      {l:'E-Way Expiry',f:r=>str(r.Eway_Expiry)},
+      {l:'E-Way Expiry',f:r=>dtp(r.Eway_Expiry)},
       {l:'Trip Status', f:r=>{
         const s=String(r.Trip_Status||'');
         return s==='RUNNING'?'<span class="badge b-run">Running</span>':s==='COMPLETED'?'<span class="badge b-done">Done</span>':'<span class="badge b-pend">—</span>';
@@ -4488,35 +4686,37 @@ function getRptCols() {
     ],
     invoice: [
       {l:'SO No',       f:r=>str(r.SO_Number),   mono:true, amber:true},
+      ldate,
       {l:'MF No',       f:r=>str(r.MF_No),       mono:true},
       {l:'Lorry No',    f:r=>str(r.Lorry_No),    mono:true},
       {l:'Consignee',   f:r=>str(r.Consignee)},
       {l:'GC No',       f:r=>str(r.GC_No),       mono:true},
       {l:'Invoice No',  f:r=>str(r.Invoice_No),  mono:true},
       {l:'E-Way Bill',  f:r=>str(r.Eway_Bill),   mono:true},
-      {l:'E-Way Expiry',f:r=>str(r.Eway_Expiry)},
-      {l:'Bilti Freight',f:r=>inr(r.Bilti_Freight),rt:true,money:true},
-      {l:'Extra Chrg',  f:r=>inr(r.Extra_Chrg),  rt:true, money:true},
-      {l:'Total Revenue',f:r=>inr(r.Total_Revenue),rt:true,money:true}
+      {l:'E-Way Expiry',f:r=>dtp(r.Eway_Expiry)},
+      {l:'Bilti Freight',f:r=>inr(r.Bilti_Freight),rt:true,money:true,k:'Bilti_Freight'},
+      {l:'Extra Chrg',  f:r=>inr(r.Extra_Chrg),  rt:true, money:true, k:'Extra_Chrg'},
+      {l:'Total Revenue',f:r=>inr(r.Total_Revenue),rt:true,money:true,k:'Total_Revenue'}
     ],
     profit: [
       {l:'SO No',        f:r=>str(r.SO_Number),  mono:true, amber:true},
+      ldate,
       {l:'MF No',        f:r=>str(r.MF_No),      mono:true},
       {l:'Lorry No',     f:r=>str(r.Lorry_No),   mono:true},
       {l:'Consignee',    f:r=>str(r.Consignee)},
       {l:'Final MT',     f:r=>num(r.Final_MT),   rt:true},
-      {l:'Party Rate',   f:r=>inr(r.Party_Rate), rt:true, money:true},
-      {l:'Lorry Rate',   f:r=>inr(r.Lorry_Rate), rt:true, money:true},
-      {l:'Margin/MT',    f:r=>inr(r.Margin_MT),  rt:true, money:true},
-      {l:'Bilti Freight',f:r=>inr(r.Bilti_Freight),rt:true,money:true},
-      {l:'Total Cost',   f:r=>inr(r.Total_Cost), rt:true, money:true},
-      {l:'Gross Profit', f:r=>{const v=parseFloat(r.Gross_Profit)||0;return`<span style="color:${v>=0?'var(--green)':'var(--red)'}">₹${v.toLocaleString('en-IN',{maximumFractionDigits:0})}</span>`;}, rt:true},
+      {l:'Party Rate',   f:r=>inr(r.Party_Rate), rt:true, money:true, k:'Party_Rate', noTotal:true},
+      {l:'Lorry Rate',   f:r=>inr(r.Lorry_Rate), rt:true, money:true, k:'Lorry_Rate', noTotal:true},
+      {l:'Margin/MT',    f:r=>inr(r.Margin_MT),  rt:true, money:true, k:'Margin_MT',  noTotal:true},
+      {l:'Bilti Freight',f:r=>inr(r.Bilti_Freight),rt:true,money:true,k:'Bilti_Freight'},
+      {l:'Total Cost',   f:r=>inr(r.Total_Cost), rt:true, money:true, k:'Total_Cost'},
+      {l:'Gross Profit', f:r=>{const v=parseFloat(r.Gross_Profit)||0;return`<span style="color:${v>=0?'var(--green)':'var(--red)'};font-weight:700">₹${v.toLocaleString('en-IN',{maximumFractionDigits:0})}</span>`;}, rt:true, money:true, k:'Gross_Profit', foot:true},
       {l:'GP on Sale',   f:r=>pct(r.GP_on_Sale), rt:true},
       {l:'GP on Purch.', f:r=>pct(r.GP_on_Purchase),rt:true}
     ],
     status: [
       {l:'SO No',     f:r=>str(r.SO_Number),  mono:true, amber:true},
-      {l:'Date',      f:r=>str(r.Created_Date)},
+      ldate,
       {l:'Consignee', f:r=>str(r.Consignee)},
       {l:'Destination',f:r=>str(r.Destination)},
       {l:'Lorry No',  f:r=>str(r.Lorry_No),   mono:true},
@@ -4541,65 +4741,66 @@ function renderRptTable() {
   const cols = getRptCols();
   const d    = _rptData;
   if (!d.length) {
-    wrap.innerHTML = `<div class="loading">No records match the current filters.</div>`;
+    wrap.innerHTML = `<div class="mr-empty"><b>No records found</b>No SOs match the current filters or Loading Date range.</div>`;
     return;
   }
 
-  // Header
   let thead = '<thead><tr>';
   cols.forEach(c => { thead += `<th${c.rt?' style="text-align:right"':''}>${c.l}</th>`; });
   thead += '</tr></thead>';
 
-  // Body + running totals
+  // Running totals (rates are not summed)
   const totals = {};
-  cols.forEach((c,i) => { if(c.money) totals[i] = 0; });
+  cols.forEach((c,i) => { if (c.money && !c.noTotal) totals[i] = 0; });
 
   let tbody = '<tbody>';
   d.forEach(r => {
     tbody += '<tr>';
     cols.forEach((c, i) => {
-      const raw = parseFloat(r[Object.keys(r).find(k => c.l.replace(/[^a-zA-Z]/g,'').toLowerCase() === k.replace(/[^a-zA-Z]/g,'').toLowerCase())] || 0) || 0;
-      if (c.money && !isNaN(raw)) totals[i] = (totals[i]||0) + raw;
-      const val = c.f(r);
+      if (totals[i] !== undefined && c.k) totals[i] += parseFloat(r[c.k]) || 0;
       let style = '';
       if (c.rt) style += 'text-align:right;';
       if (c.mono) style += 'font-family:var(--mono);font-size:11px;';
       if (c.amber) style += 'color:var(--amber);font-weight:700;';
-      tbody += `<td${style?` style="${style}"`:''}>${val}</td>`;
+      tbody += `<td${style?` style="${style}"`:''}>${c.f(r)}</td>`;
     });
     tbody += '</tr>';
   });
   tbody += '</tbody>';
 
-  // Footer totals row
   let tfoot = '<tfoot><tr>';
   cols.forEach((c, i) => {
     if (i === 0) {
-      tfoot += `<td style="color:var(--amber2,#f59e0b);font-weight:700;font-size:11px">TOTAL (${d.length})</td>`;
-    } else if (c.money && totals[i] !== undefined) {
-      tfoot += `<td style="text-align:right;font-family:var(--mono)">₹${totals[i].toLocaleString('en-IN',{maximumFractionDigits:0})}</td>`;
+      tfoot += `<td style="color:#f2cc60;font-weight:700;font-size:11px">TOTAL (${d.length})</td>`;
+    } else if (totals[i] !== undefined) {
+      const v = totals[i];
+      const col = c.foot ? (v >= 0 ? '#7ee2a0' : '#ff9a9a') : '#fff';
+      tfoot += `<td style="text-align:right;font-family:var(--mono);color:${col}">₹${v.toLocaleString('en-IN',{maximumFractionDigits:0})}</td>`;
     } else {
       tfoot += '<td></td>';
     }
   });
   tfoot += '</tr></tfoot>';
 
-  wrap.innerHTML = `<div class="table-wrap"><table>${thead}${tbody}${tfoot}</table></div>`;
+  wrap.innerHTML = `<div class="mr-scroll"><table>${thead}${tbody}${tfoot}</table></div>`;
 }
 
 function exportRptCSV() {
   if (!_rptData.length) { toast('No data to export','error'); return; }
   const cols = getRptCols();
   const bom  = '\uFEFF';
+  const f = _rptFilters || {};
+  const range = (f.dateFrom || f.dateTo)
+    ? ` | Loading Date: ${f.dateFrom ? _rptFmtDate(f.dateFrom) : 'Start'} to ${f.dateTo ? _rptFmtDate(f.dateTo) : 'Latest'}`
+    : '';
   let csv = bom;
   csv += 'SFMPL TMS — Master Report\n';
-  csv += `Tab: ${_rptTab} | Records: ${_rptData.length} | Generated: ${new Date().toLocaleDateString('en-IN')}\n\n`;
+  csv += `Tab: ${_rptTab} | Records: ${_rptData.length}${range} | Generated: ${new Date().toLocaleDateString('en-IN')}\n\n`;
   csv += cols.map(c => `"${c.l}"`).join(',') + '\n';
   _rptData.forEach(r => {
     const row = cols.map(c => {
-      // get raw value for CSV (strip HTML)
-      const html = c.f(r);
-      const raw  = html.replace(/<[^>]+>/g, '').replace(/₹/g,'').replace(/,/g,'').trim();
+      const html = String(c.f(r));
+      const raw  = html.replace(/<[^>]+>/g, '').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/₹/g,'').replace(/,/g,'').trim();
       return `"${raw.replace(/"/g,'""')}"`;
     });
     csv += row.join(',') + '\n';
@@ -4615,6 +4816,109 @@ function exportRptCSV() {
   toast('CSV downloaded ✓');
 }
 
+// ---- Excel export in the company MF sheet format (follows current filters / Loading Date range) ----
+async function exportRptExcel() {
+  if (typeof XLSX === 'undefined') { toast('Excel library not loaded. Check internet and refresh.', 'error'); return; }
+  toast('Preparing Excel…');
+  let res;
+  try { res = await call('getMasterExcelData', _rptFilters); } catch(e) { res = null; }
+  if (!res || !res.success) { toast('Could not load report data', 'error'); return; }
+  const rows = (res.data || []).filter(r => String(r.MF_No || '').trim());   // MF sheet = one line per MF
+  if (!rows.length) { toast('No MF records in the selected range', 'error'); return; }
+
+  const n = v => parseFloat(v) || 0;
+  const serial = v => {                       // 'YYYY-MM-DD' -> real Excel date serial
+    const m = String(v || '').slice(0,10).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return null;
+    return Math.round((Date.UTC(+m[1], +m[2]-1, +m[3]) - Date.UTC(1899, 11, 30)) / 86400000);
+  };
+
+  // [header, value(row), kind]   kind: d=date, t=text, n=number (summed in the total row), r=number (not summed)
+  const COLS = [
+    ['Loading Date',     r => serial(r.Loading_Date),                         'd'],
+    ['Mf No',            r => r.MF_No,                                        't'],
+    ['Truck No.',        r => r.Lorry_No,                                     't'],
+    ['Broker Name',      r => r.Broker_Name,                                  't'],
+    ['Loading Point',    r => r.Loading_Point,                                't'],
+    ['loading clek',     r => '',                                             't'],   // not stored in TMS
+    ['Qty',              r => n(r.Final_MT),                                  'n'],
+    ['Pmt',              r => n(r.PMT_Rate),                                  'r'],
+    ['Othr Cha',         r => n(r.Other_Expense),                             'n'],
+    ['Total',            r => n(r.Total_Freight),                             'n'],   // Qty x Pmt
+    ['Total Freight',    r => n(r.Total_Freight) + n(r.Other_Expense),        'n'],   // Total + Othr Cha
+    ['L/M',              r => n(r.LM),                                        'n'],
+    ['P/M',              r => n(r.PM),                                        'n'],
+    ['MF Freight',       r => n(r.Freight_MF),                                'n'],
+    ['Adv',              r => n(r.Advance),                                   'n'],
+    ['Bal',              r => n(r.Balance),                                   'n'],
+    ['Destination',      r => r.Destination,                                  't'],
+    ['LR NO',            r => r.GC_No,                                        't'],
+    ['Consignee',        r => r.Consignee,                                    't'],
+    ['Consignor',        r => r.Consignor,                                    't'],
+    ['Bill Party',       r => r.Bill_Party,                                   't'],
+    ['PKGS',             r => r.PKGS,                                         't'],
+    ['Item Description', r => r.Items,                                        't'],
+    ['unloading date',   r => serial(r.Unloading_Date),                       'd'],
+    ['ack date',         r => null,                                           'd'],   // not stored in TMS
+    ['Load',             r => n(r.Loading_Labour),                            'n'],
+    ['Food',             r => n(r.Fooding),                                   'n'],
+    ['XEROX',            r => n(r.Xerox),                                     'n'],
+    ['Con',              r => n(r.Con),                                       'n'],
+    ['Unl ',             r => n(r.Unloading_Exp),                             'n'],
+    ['Det',              r => n(r.Detention),                                 'n'],
+    ['Ex-Point/Weight',  r => n(r.Extra_Point),                               'n'],
+    ['Total Exp',        r => n(r.Total_Exp),                                 'n'],
+    ['Total Exp',        r => n(r.Total_Cost),                                'n'],   // 2nd "Total Exp" = Total Cost (Freight MF + Exp + Extra Labour)
+    ['PARTY RATE',       r => n(r.Party_Rate),                                'r'],
+    ['Bilti Freight',    r => n(r.Bilti_Freight),                             'n'],
+    ['Extra Labour',     r => n(r.Extra_Labour),                              'n'],
+    ['GP',               r => r.Has_Profit ? n(r.Gross_Profit) : null,        'n'],
+    ['GP % SALES',       r => r.Has_Profit ? n(r.GP_on_Sale) / 100 : null,    'p'],
+    ['GP ON PURCHASE',   r => r.Has_Profit ? n(r.GP_on_Purchase) / 100 : null,'p'],
+    ['eway bill no',     r => r.Eway_Bill,                                    't'],
+    ['inv no',           r => r.Invoice_No,                                   't']
+  ];
+
+  const aoa = [COLS.map(c => c[0])];
+  rows.forEach(r => aoa.push(COLS.map(c => {
+    const v = c[1](r);
+    return (v === null || v === undefined) ? '' : v;
+  })));
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+  // cell types / formats
+  const last = rows.length + 1;              // last data row (1-based)
+  COLS.forEach((c, ci) => {
+    for (let ri = 1; ri <= rows.length; ri++) {
+      const ref = XLSX.utils.encode_cell({ c: ci, r: ri });
+      const cell = ws[ref]; if (!cell || cell.v === '') continue;
+      if (c[2] === 'd')      { cell.t = 'n'; cell.z = 'dd-mmm-yyyy'; }
+      else if (c[2] === 'p') { cell.z = '0%'; }
+      else if (c[2] === 'n' || c[2] === 'r') { cell.z = '#,##0.##'; }
+    }
+  });
+
+  // total row with live SUM formulas
+  const tr = last;                           // 0-based row index of total row
+  const label = XLSX.utils.encode_cell({ c: 1, r: tr });
+  ws[label] = { t: 's', v: 'TOTAL (' + rows.length + ')' };
+  COLS.forEach((c, ci) => {
+    if (c[2] !== 'n') return;
+    const col = XLSX.utils.encode_col(ci);
+    let sum = 0; rows.forEach(r => { sum += parseFloat(c[1](r)) || 0; });
+    ws[XLSX.utils.encode_cell({ c: ci, r: tr })] = { t: 'n', v: sum, f: `SUM(${col}2:${col}${last})`, z: '#,##0.##' };
+  });
+  ws['!ref'] = XLSX.utils.encode_range({ s: { c: 0, r: 0 }, e: { c: COLS.length - 1, r: tr } });
+  ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { c: 0, r: 0 }, e: { c: COLS.length - 1, r: rows.length } }) };
+  ws['!cols'] = COLS.map(c => ({ wch: c[2] === 'd' ? 13 : (/Description|Consignee|Consignor|Bill Party|Broker|Destination|Loading Point/.test(c[0]) ? 22 : 12) }));
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Master Report');
+  const f = _rptFilters || {};
+  const tag = (f.dateFrom || f.dateTo) ? ((f.dateFrom || 'start') + '_to_' + (f.dateTo || 'latest')) : _rptYMD(new Date());
+  XLSX.writeFile(wb, 'SFMPL_Master_Report_' + tag + '.xlsx');
+  toast('Excel downloaded ✓ (' + rows.length + ' MF rows)');
+}
 
 // =============================================
 // AUTH FUNCTIONS
